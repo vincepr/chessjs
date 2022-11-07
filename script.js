@@ -1,57 +1,18 @@
-const boardElement = document.getElementById("board")
 var isWhitesTurn = true
-var selectedFigure = null
-var allFigures = {}
+var selectedMoves = null            
+var allFigures = {}                 
+var movesLog = []
 
 init_start()
 function init_start() {
-
-    // load default positions from array
-    // :todo laod from gamemode.json async load of json
-    let start_positions = {
-        "1,8" : [true, "rook"],
-        "2,8" : [true, "knight"],
-        "3,8" : [true, "bishop"],
-        "4,8" : [true, "queen"],
-        "5,8" : [true, "king"],
-        "6,8" : [true, "bishop"],
-        "7,8" : [true, "knight"],
-        "8,8" : [true, "rook"],
-        "1,7" : [true, "pawn"],
-        "2,7" : [true, "pawn"],
-        "3,7" : [true, "pawn"],
-        "4,7" : [true, "pawn"],
-        "5,7" : [true, "pawn"],
-        "6,7" : [true, "pawn"],
-        "7,7" : [true, "pawn"],
-        "8,7" : [true, "pawn"],
-        "1,1" : [false, "rook"],
-        "2,1" : [false, "knight"],
-        "3,1" : [false, "bishop"],
-        "4,1" : [false, "queen"],
-        "5,1" : [false, "king"],
-        "6,1" : [false, "bishop"],
-        "7,1" : [false, "knight"],
-        "8,1" : [false, "rook"],
-        "1,2" : [false, "pawn"],
-        "2,2" : [false, "pawn"],
-        "3,2" : [false, "pawn"],
-        "4,2" : [false, "pawn"],
-        "5,2" : [false, "pawn"],
-        "6,2" : [false, "pawn"],
-        "7,2" : [false, "pawn"],
-        "8,2" : [false, "pawn"],
-    }   // pos : [black, picename]
-
-    allFigures=start_positions
-
-    //set grid background-colors and set up chess as array like grid with id [y,x]
+    //set up chess board grid
     for (let number=0; number<8; number++){
         for (let letter=0; letter<8; letter++){
-            //let letter_value=""
-            //let div = document.createElement("div")
-            //div.className="cell"
-
+            let letter_value=""
+            let div = document.createElement("div")
+            div.className="cell"
+            let boardElement = document.getElementById("board")
+            boardElement.appendChild(div)
             if(letter===0){letter_value="A"}
             else if (letter===1){letter_value="B"}
             else if (letter===2){letter_value="C"}
@@ -60,21 +21,57 @@ function init_start() {
             else if (letter===5){letter_value="F"}
             else if (letter===6){letter_value="G"}
             else if (letter===7){letter_value="H"}
-            boardElement.children[letter+number*8].innerHTML="["+String(1+letter)+","+String(8-number)+"]"+" / "+letter_value+(8-number)
-            boardElement.children[letter+number*8].id=String(1+letter)+','+String(8-number)
-            // Color-pattern Chessboard
+            div.innerHTML="["+String(1+letter)+String(8-number)+"]"+" / "+letter_value+(8-number)
+            div.id=String(letter_value)+String(8-number)
+            // Color-pattern the Chessboard
             if (letter % 2){
                 boardElement.children[letter+(number*8)-number%2].className="cell cellalt"
             }
         }
     }
 
+    // load default positions from array
+    // :todo laod from gamemode.json async 
+    let start_positions = {
+        "A8" : [true, "rook"],
+        "B8" : [true, "knight"],
+        "C8" : [true, "bishop"],
+        "D8" : [true, "queen"],
+        "E8" : [true, "king"],
+        "F8" : [true, "bishop"],
+        "G8" : [true, "knight"],
+        "H8" : [true, "rook"],
+        "A7" : [true, "pawn"],
+        "B7" : [true, "pawn"],
+        "C7" : [true, "pawn"],
+        "D7" : [true, "pawn"],
+        "E7" : [true, "pawn"],
+        "F7" : [true, "pawn"],
+        "G7" : [true, "pawn"],
+        "H7" : [true, "pawn"],
+        "A1" : [false, "rook"],
+        "B1" : [false, "knight"],
+        "C1" : [false, "bishop"],
+        "D1" : [false, "queen"],
+        "E1" : [false, "king"],
+        "F1" : [false, "bishop"],
+        "G1" : [false, "knight"],
+        "H1" : [false, "rook"],
+        "A2" : [false, "pawn"],
+        "B2" : [false, "pawn"],
+        "C2" : [false, "pawn"],
+        "D2" : [false, "pawn"],
+        "E2" : [false, "pawn"],
+        "F2" : [false, "pawn"],
+        "G2" : [false, "pawn"],
+        "H2" : [false, "pawn"],
+    }   // pos : [isblack, figurename]
     //fill figures in
-    for (var key in start_positions){
+    for (var position in start_positions){          //start_positions = {"A8" : [true, "rook"]...}
         let img = document.createElement("img")
-        let figure_type=start_positions[key][1]
+        let figure_type=start_positions[position][1]
 
-        if (start_positions[key][0]){
+        if (start_positions[position][0]){
             img.src=`img/b_${figure_type}.png`
             img.className="black_figure"
         }
@@ -84,42 +81,85 @@ function init_start() {
         }
         img.id="figure_type"
         img.onclick = () => { handleClick(img) }
-        document.getElementById(key).appendChild(img)
+        document.getElementById(position).appendChild(img)
+        allFigures[position]=({
+            "img": img,
+            "position": position,
+            "figure_type": figure_type,
+            "figure_color": img.className,
+        })
     }
-
-    //document.getElementById(test[position]).style.background="red"
 }
+
 
 function handleClick(clickedElement){
     let playercolor = "white_figure"
     let enemycolor = "black_figure"
-    if (!isWhitesTurn) {
-        [playercolor, enemycolor] = [enemycolor, playercolor]
-    }
+    if (!isWhitesTurn) {[playercolor, enemycolor] = [enemycolor, playercolor]}
 
-    if(clickedElement.className===enemycolor){
+    if (clickedElement.className===enemycolor){
         console.log("handleClick() -> enemy")
         // try to capture
     } else if (clickedElement.className===playercolor){
-        console.log("handleClick() -> mine ->select")
-        // try to select
-        selectedFigure = getLegalMoves(clickedElement)
-        for (move of selectedFigure["moves"]){
+        //try to select
+        removeElementsByClassName("move_marker")        // delete old markers
+        selectedMoves = {                               // store selected img and all legal moves
+            "moves" : getLegalMoves(clickedElement),
+            "img" : clickedElement,
+        }
+        for (move of selectedMoves["moves"]){           //create move_markers on board
             let img = document.createElement("img")
-            img.src=`img/marker.png`
+            img.src = `img/marker.png`
             img.className="move_marker"
             img.onclick = () => { handleClick(img) }
             document.getElementById(move).appendChild(img)
         }
 
-    } else {
+    } else if (clickedElement.className==="move_marker"){
         // try to move
+        let img = selectedMoves["img"]
+        let targetCell = clickedElement.parentElement
+        movesLog.push(img.parentElement.id + ">" + targetCell.id)
+        targetCell.appendChild(img)
+        removeElementsByClassName("move_marker")
+        selectedMoves = null
+        endTurn()
     }
 }
 
-function getLegalMoves(id){
-    let parent = id.parentElement.id
-    let xy = [Number(parent.substring(0,1)), Number(parent.substring(2,3))]
-    console.log(xy)
-    return {"id":id , "moves": [ String(xy[0])] +","+String(2+xy[1])}
+
+function removeElementsByClassName(className){
+    let elements = document.getElementsByClassName(className);
+    while(elements.length > 0){
+        elements[0].parentNode.removeChild(elements[0]);
+    }
 }
+
+
+function getLegalMoves(id){                             // -> ["D3", "D4"]
+/*     let parent = id.parentElement.id
+    let xy = [Number(parent.substring(0,1)), Number(parent.substring(2,3))]
+    console.log(xy) */
+    return ["D3", "D4"]
+}
+
+
+function endTurn(){
+    isWhitesTurn = !isWhitesTurn
+}
+
+
+
+
+
+
+
+
+
+
+//debug stuff
+
+/* console.log(allFigures)
+for ((key) in allFigures){
+    console.log(key)
+} */

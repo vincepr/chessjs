@@ -21,11 +21,11 @@ div.cell{
 div.cellalt{
     background-color:rgb(233, 198, 170);
 }
+
 .black_figure{
     width: var(--cell-size);
     height: calc(0.8*var(--cell-size));
 }
-
 .white_figure{
     width: var(--cell-size);
     height: calc(0.8*var(--cell-size));
