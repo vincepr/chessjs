@@ -3,6 +3,7 @@ var selectedMoves = null
 var allFigures = {}                 
 var movesLog = []
 
+
 init_start()
 function init_start() {
     //set up chess board grid
