@@ -1,0 +1,37 @@
+:root{
+    --cell-size: 100px;
+}
+body{
+    margin:0;
+}
+.board{
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    justify-content:center;
+    align-content:center;
+    grid-template-columns: repeat(8, auto);
+}
+div.cell{
+    width: var(--cell-size);
+    height: var(--cell-size);
+    background-color: rgb(250, 245, 239);
+    border:1px solid grey;
+}
+div.cellalt{
+    background-color:rgb(233, 198, 170);
+}
+.black_figure{
+    width: var(--cell-size);
+    height: calc(0.8*var(--cell-size));
+}
+
+.white_figure{
+    width: var(--cell-size);
+    height: calc(0.8*var(--cell-size));
+}
+.move_marker{
+    width: var(--cell-size);
+    height: calc(0.8*var(--cell-size));
+    opacity: 0.3;
+}

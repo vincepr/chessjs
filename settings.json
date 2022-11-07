@@ -1,0 +1,38 @@
+{ "mode": "default",
+ "start_positions": {
+    "1,8" : [true, "rook"],
+    "2,8" : [true, "knight"],
+    "3,8" : [true, "bishop"],
+    "4,8" : [true, "queen"],
+    "5,8" : [true, "king"],
+    "6,8" : [true, "bishop"],
+    "7,8" : [true, "knight"],
+    "8,8" : [true, "rook"],
+    "1,7" : [true, "pawn"],
+    "2,7" : [true, "pawn"],
+    "3,7" : [true, "pawn"],
+    "4,7" : [true, "pawn"],
+    "5,7" : [true, "pawn"],
+    "6,7" : [true, "pawn"],
+    "7,7" : [true, "pawn"],
+    "8,7" : [true, "pawn"],
+    "1,1" : [false, "rook"],
+    "2,1" : [false, "knight"],
+    "3,1" : [false, "bishop"],
+    "4,1" : [false, "queen"],
+    "5,1" : [false, "king"],
+    "6,1" : [false, "bishop"],
+    "7,1" : [false, "knight"],
+    "8,1" : [false, "rook"],
+    "1,2" : [false, "pawn"],
+    "2,2" : [false, "pawn"],
+    "3,2" : [false, "pawn"],
+    "4,2" : [false, "pawn"],
+    "5,2" : [false, "pawn"],
+    "6,2" : [false, "pawn"],
+    "7,2" : [false, "pawn"],
+    "8,2" : [false, "pawn"]
+}
+
+
+}
