@@ -80,12 +80,11 @@ function init_start() {
             img.src=`img/w_${figure_type}.png`
             img.className="white_figure"
         }
-        img.id="figure_type"
+        img.id=figure_type
         img.onclick = () => { handleClick(img) }
         document.getElementById(position).appendChild(img)
         allFigures[position]=({
             "img": img,
-            "position": position,
             "figure_type": figure_type,
             "figure_color": img.className,
         })
@@ -121,10 +120,12 @@ function handleClick(clickedElement){
         let img = selectedMoves["img"]
         let targetCell = clickedElement.parentElement
         movesLog.push(img.parentElement.id + ">" + targetCell.id)
+        allFigures[targetCell.id] = allFigures[img.parentElement.id]
         targetCell.appendChild(img)
         removeElementsByClassName("move_marker")
         selectedMoves = null
         endTurn()
+        // :todo set new position in allFigures
     }
 }
 
@@ -137,11 +138,43 @@ function removeElementsByClassName(className){
 }
 
 
-function getLegalMoves(id){                             // -> ["D3", "D4"]
-/*     let parent = id.parentElement.id
-    let xy = [Number(parent.substring(0,1)), Number(parent.substring(2,3))]
-    console.log(xy) */
-    return ["D3", "D4"]
+function getLegalMoves(img){                             // -> ["D3", "D4"]
+    let pos = img.parentElement.id
+    //change to xy coords->
+    let y = Number( pos.substring(1, 2) )
+    let x = Number( pos.substring(0, 1).charCodeAt(0)-64 )      //character to int A ->65-64=1 B=2...
+    let type = img.id
+    let possibleMoves = []
+    let legalMoves = []
+
+    if(type==="pawn"){
+        if (isWhitesTurn){
+            if (y===2){possibleMoves.push(getBoardValue(x, y+2))}
+            possibleMoves.push(getBoardValue(x, y+1))
+        }else {
+            if (y===7){possibleMoves.push(getBoardValue(x, y-2))}
+            possibleMoves.push(getBoardValue(x, y-1))
+        }
+        //check if figure is blocking move
+        for (move in possibleMoves) {
+            if(allFigures[move]){
+                console.log(blocked)
+            }
+        }
+        legalMoves = possibleMoves
+    }
+    else if(type==="rook") {}
+    else if(type==="knight") {}
+    else if(type==="bishop") {}
+    else if(type==="queen") {}
+    else if(type==="king") {}
+    if (legalMoves.length>0) {return legalMoves}
+    return ["D3", "D4", "C3", "C4", "C5"]
+}
+
+
+function getBoardValue(x, y){                        // 1,1->"A1"  3,1->"C1"
+    return String(String.fromCharCode(64+x) + y)
 }
 
 
@@ -151,7 +184,7 @@ function endTurn(){
 
 
 
-
+// :todo remove useless allFigures and dependencies
 
 
 
