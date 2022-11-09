@@ -13,6 +13,8 @@ body{
     grid-template-columns: repeat(8, auto);
 }
 div.cell{
+    position:relative;
+    display: grid;
     width: var(--cell-size);
     height: var(--cell-size);
     background-color: rgb(250, 245, 239);
@@ -22,16 +24,18 @@ div.cellalt{
     background-color:rgb(233, 198, 170);
 }
 
-.black_figure{
-    width: var(--cell-size);
-    height: calc(0.8*var(--cell-size));
-}
-.white_figure{
-    width: var(--cell-size);
-    height: calc(0.8*var(--cell-size));
+.white_figure, .black_figure{
+    position:absolute;
+    justify-self: center;
+    align-self: center;
+    width: calc(0.9*var(--cell-size));
+    height: calc(0.9*var(--cell-size));
 }
 .move_marker{
+    position:absolute;
+    justify-self: center;
+    align-self: center;
     width: var(--cell-size);
     height: calc(0.8*var(--cell-size));
-    opacity: 0.3;
+    opacity: 0.4;
 }
