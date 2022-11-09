@@ -4,8 +4,12 @@ var allFigures = {}
 var movesLog = []
 
 
-init_start()
-function init_start() {
+fetch("settings.json")                                          //load settings-> Starting board positions
+  .then(response => response.json())
+  .then(json => init_start(json) );
+
+
+function init_start(settings) {
     //set up chess board grid
     for (let number=0; number<8; number++){
         for (let letter=0; letter<8; letter++){
@@ -23,62 +27,26 @@ function init_start() {
         }
     }
 
-    // load default positions from array
-    // :todo laod from gamemode.json async 
-    let start_positions = {
-        "A8" : [true, "rook"],
-        "B8" : [true, "knight"],
-        "C8" : [true, "bishop"],
-        "D8" : [true, "queen"],
-        "E8" : [true, "king"],
-        "F8" : [true, "bishop"],
-        "G8" : [true, "knight"],
-        "H8" : [true, "rook"],
-        "A7" : [true, "pawn"],
-        "B7" : [true, "pawn"],
-        "C7" : [true, "pawn"],
-        "D7" : [true, "pawn"],
-        "E7" : [true, "pawn"],
-        "F7" : [true, "pawn"],
-        "G7" : [true, "pawn"],
-        "H7" : [true, "pawn"],
-        "A1" : [false, "rook"],
-        "B1" : [false, "knight"],
-        "C1" : [false, "bishop"],
-        "D1" : [false, "queen"],
-        "E1" : [false, "king"],
-        "F1" : [false, "bishop"],
-        "G1" : [false, "knight"],
-        "H1" : [false, "rook"],
-        "A2" : [false, "pawn"],
-        "B2" : [false, "pawn"],
-        "C2" : [false, "pawn"],
-        "D2" : [false, "pawn"],
-        "E2" : [false, "pawn"],
-        "F2" : [false, "pawn"],
-        "G2" : [false, "pawn"],
-        "H2" : [false, "pawn"],
-    }   // pos : [isblack, figurename]
+    let start_positions=(settings["start_positions"])           // stored in settings.json {"A1": [isBlack, "rook"]}
+    console.log(start_positions)
     //fill figures in
-    for (var position in start_positions){          //start_positions = {"A8" : [true, "rook"]...}
+    for (var position in start_positions){                      //start_positions = {"A8" : [true, "rook"]...}
         let img = document.createElement("img")
         let figure_type=start_positions[position][1]
-
+        let figure_col= "white_figure"
+        img.src=img.src=`img/w_${figure_type}.png`
         if (start_positions[position][0]){
             img.src=`img/b_${figure_type}.png`
-            img.className="black_figure"
-        }
-        else {
-            img.src=`img/w_${figure_type}.png`
-            img.className="white_figure"
+            figure_col="black_figure"
         }
         img.id=figure_type
+        img.className="figure"
         img.onclick = () => { handleClick(img) }
         document.getElementById(position).appendChild(img)
         allFigures[position]=({
             "img": img,
             "figure_type": figure_type,
-            "figure_color": img.className,
+            "figure_color": figure_col,
         })
     }
 }
@@ -88,23 +56,8 @@ function handleClick(clickedElement){
     let playercolor = "white_figure"
     let enemycolor = "black_figure"
     if (!isWhitesTurn) {[playercolor, enemycolor] = [enemycolor, playercolor]}
-
-    if (clickedElement.className===playercolor){
-        //try to select
-        removeElementsByClassName("move_marker")        // delete old markers
-        selectedMoves = {                               // store selected img and all legal moves
-            "moves" : getLegalMoves(clickedElement),
-            "img" : clickedElement,
-        }
-        for (move of selectedMoves["moves"]){           //create move_markers on board
-            let img = document.createElement("img")
-            img.src = `img/marker.png`
-            img.className="move_marker"
-            img.onclick = () => { handleClick(img) }
-            document.getElementById(move).appendChild(img)
-        }
-
-    } else if (clickedElement.className==="move_marker"){
+    
+    if (clickedElement.className==="move_marker"){
         if(allFigures[clickedElement.parentElement.id]){
             //move while capturing
             let img = selectedMoves["img"]
@@ -126,20 +79,25 @@ function handleClick(clickedElement){
         removeElementsByClassName("move_marker")
         selectedMoves = null
         endTurn()
-        // :todo set new position in allFigures
+    } else if (allFigures[clickedElement.parentElement.id]["figure_color"]===playercolor){
+        removeElementsByClassName("move_marker")                
+        selectedMoves = {                                       // store selected img and all legal moves  :todo check if this is even beneficial/necessary
+            "moves" : getLegalMoves(clickedElement),
+            "img" : clickedElement,
+        }
+        for (move of selectedMoves["moves"]){                   //create move_markers on board
+            let img = document.createElement("img")
+            img.src = `img/marker.png`
+            img.className="move_marker"
+            img.onclick = () => { handleClick(img) }
+            document.getElementById(move).appendChild(img)
+        }
+
     }
 }
 
 
-function removeElementsByClassName(className){
-    let elements = document.getElementsByClassName(className);
-    while(elements.length > 0){
-        elements[0].parentNode.removeChild(elements[0]);
-    }
-}
-
-
-function getLegalMoves(img){                             
+function getLegalMoves(img){                                    //get legal moves for chosen img :todo rewrite so only uses choordinate instead of img                             
     let pos = img.parentElement.id
     //change to xy coords->
     let y = Number( pos.substring(1, 2) )
@@ -149,20 +107,19 @@ function getLegalMoves(img){
     if (isWhitesTurn){enemycolor="black_figure"}
     let possibleMoves = []
     let legalMoves = []
-
     if(type==="pawn"){
         let direction = 1
-        if (!isWhitesTurn){direction = -1}      //black moves down, white up
-        for (xoffset of [1,-1]){                //check if can capture left/right
+        if (!isWhitesTurn){direction = -1}                      //black moves down, white up
+        for (xoffset of [1,-1]){                                //check if can capture left/right
             let pos = getBoardValue( x+xoffset, y+direction )
             if(allFigures[pos] && allFigures[pos]["figure_color"]===enemycolor){
                 legalMoves.push(pos)
             }
         }                                       
-        let pos = getBoardValue(x, y+direction) //check if can move 1 steps
+        let pos = getBoardValue(x, y+direction)                 //check if can move 1 steps
         if (!allFigures[pos]){
             legalMoves.push(pos)
-            let extraMoveReq = 7                //check if can move 2 steps
+            let extraMoveReq = 7                                //check if can move 2 steps
             if (isWhitesTurn) {extraMoveReq=2}  
             if (y=== extraMoveReq){             
                 pos = getBoardValue( x, y+2*direction )
@@ -235,7 +192,7 @@ function getLegalMoves(img){
             }
         }
     }
-    return legalMoves      //:todo delete this default line at the end!
+    return legalMoves
 }
 
 
@@ -246,15 +203,14 @@ function getNextLinearMoves(x, y, direction, enemycolor){       //moves in a lin
     if (direction[2]){y-=1}
     if (direction[3]){x-=1}
     if ((x > 0 && x < 9) && (y > 0 && y < 9)){
-        if (allFigures[getBoardValue(x,y)]){
-                //figure is blocking
+        if (allFigures[getBoardValue(x,y)]){                    //figure is blocking
             if (allFigures[getBoardValue(x,y)]["figure_color"]===enemycolor){
                 return [getBoardValue(x,y)] 
             }
             else{
                 return null 
             }
-        }else{  //no Figure there so do recursion
+        }else{                                                  //no Figure there so do recursion
             let recursion=getNextLinearMoves(x, y, direction, enemycolor)
             if (recursion === null){
                 return [getBoardValue(x, y)]}
@@ -264,9 +220,15 @@ function getNextLinearMoves(x, y, direction, enemycolor){       //moves in a lin
     } return null
 
 }
-function getBoardValue(x, y){                        // 1,1->"A1"  3,1->"C1"
+function getBoardValue(x, y){                                   // 1,1->"A1"  3,1->"C1"
     return String(String.fromCharCode(64+x) + y)
 }
 function endTurn(){
     isWhitesTurn = !isWhitesTurn
+}
+function removeElementsByClassName(className){
+    let elements = document.getElementsByClassName(className);
+    while(elements.length > 0){
+        elements[0].parentNode.removeChild(elements[0]);
+    }
 }

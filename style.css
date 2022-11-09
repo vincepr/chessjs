@@ -24,12 +24,12 @@ div.cellalt{
     background-color:rgb(233, 198, 170);
 }
 
-.white_figure, .black_figure{
+.figure{
     position:absolute;
     justify-self: center;
     align-self: center;
-    width: calc(0.9*var(--cell-size));
-    height: calc(0.9*var(--cell-size));
+    width: var(--cell-size);
+    height: var(--cell-size);
 }
 .move_marker{
     position:absolute;
@@ -38,4 +38,7 @@ div.cellalt{
     width: var(--cell-size);
     height: calc(0.8*var(--cell-size));
     opacity: 0.4;
+}
+img{
+    -webkit-user-drag: none;
 }
