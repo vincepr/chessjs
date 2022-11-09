@@ -151,22 +151,25 @@ function getLegalMoves(img){
     let legalMoves = []
 
     if(type==="pawn"){
-        if (isWhitesTurn){
-            if (y===2){possibleMoves.push(getBoardValue(x, y+2))}   //firstmove
-            possibleMoves.push(getBoardValue(x, y+1)                //normal move
-            )
-        }else {
-            if (y===7){possibleMoves.push(getBoardValue(x, y-2))}
-            possibleMoves.push(getBoardValue(x, y-1))
-        }
-        for (i of possibleMoves){
-            if(allFigures[i]){
-                if (i===0){possibleMoves=[]}
-                else{possibleMoves.pop()}
+        let direction = 1
+        if (!isWhitesTurn){direction = -1}      //black moves down, white up
+        for (xoffset of [1,-1]){                //check if can capture left/right
+            let pos = getBoardValue( x+xoffset, y+direction )
+            if(allFigures[pos] && allFigures[pos]["figure_color"]===enemycolor){
+                legalMoves.push(pos)
             }
+        }                                       
+        let pos = getBoardValue(x, y+direction) //check if can move 1 steps
+        if (!allFigures[pos]){
+            legalMoves.push(pos)
+            let extraMoveReq = 7                //check if can move 2 steps
+            if (isWhitesTurn) {extraMoveReq=2}  
+            if (y=== extraMoveReq){             
+                pos = getBoardValue( x, y+2*direction )
+                if (!allFigures[pos]){legalMoves.push(pos)}
+            }
+
         }
-        // :todo pawn cant capture (do last seems special compared to others)
-        legalMoves = possibleMoves
     }
     else if(type==="rook") {
         let alldirections = [[true,false,false,false],[false,true,false,false],[false,false,true,false],[false,false,false,true]]
@@ -176,23 +179,6 @@ function getLegalMoves(img){
                 for (move of possibleMoves){legalMoves.push(move)}
                 }
             
-        }
-    }
-    else if(type==="knight") {
-        let allmoves = [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]]
-        for (i in allmoves){
-            let xx = x + allmoves[i][0] 
-            let yy = y + allmoves[i][1]
-            if((xx > 0 && xx < 9) && (yy > 0 && yy < 9) ){
-                possibleMoves.push(getBoardValue(xx, yy))}
-        }
-        for (i in possibleMoves){
-            if(!allFigures[possibleMoves[i]]){                                                                      //isFree -> move
-                legalMoves.push(possibleMoves[i])
-            }
-            if(allFigures[possibleMoves[i]]  &&  allFigures[possibleMoves[i]]["figure_color"]===enemycolor) {       //enemyFigure -> capture
-                legalMoves.push(possibleMoves[i])
-            }
         }
     }
     else if(type==="bishop") {
@@ -215,47 +201,72 @@ function getLegalMoves(img){
             
         }
     }
-    else if(type==="king") {}
-    if (legalMoves.length>0) {return legalMoves}
-    return []       //:todo delete this default line at the end!
+    else if(type==="knight") {
+        let allmoves = [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]]
+        for (move of allmoves){
+            let xx = x + move[0]
+            let yy = y + move[1]
+            if((xx > 0 && xx < 9) && (yy > 0 && yy < 9) ){
+                possibleMoves.push(getBoardValue(xx, yy))}
+        }
+        for (move of possibleMoves){
+            if(!allFigures[move]){                                                                      
+                legalMoves.push(move)
+            }
+            if(allFigures[move]  &&  allFigures[move]["figure_color"]===enemycolor) {       
+                legalMoves.push(move)
+            }
+        }
+    }
+    else if(type==="king") {
+        let allmoves = [[1,0],[1,1],[0,1],[-1,0],[-1,1],[1,-1],[0,-1],[-1,-1]]
+        for (move of allmoves){
+            let xx = x + move[0]
+            let yy = y + move[1]
+            if((xx > 0 && xx < 9) && (yy > 0 && yy < 9) ){
+                possibleMoves.push(getBoardValue(xx, yy))}
+        }
+        for (move of possibleMoves){
+            if(!allFigures[move]){                                                                      
+                legalMoves.push(move)
+            }
+            if(allFigures[move]  &&  allFigures[move]["figure_color"]===enemycolor) {       
+                legalMoves.push(move)
+            }
+        }
+    }
+    return legalMoves      //:todo delete this default line at the end!
 }
 
-function inRange(i){
-    if(i > 0 && i < 9){return true}
-    return false
-}
 
 function getNextLinearMoves(x, y, direction, enemycolor){       //moves in a line to next board pice till end or figure // direction [top, right, down, left] ex topright:[true, true, false, false]
-    let xx=x
-    let yy=y
-    if (direction[0]){yy+=1}
-    if (direction[1]){xx+=1}
-    if (direction[2]){yy-=1}
-    if (direction[3]){xx-=1}
-    if (inRange(xx) && inRange(yy)){
-        if (allFigures[getBoardValue(xx,yy)]){
+
+    if (direction[0]){y+=1}
+    if (direction[1]){x+=1}
+    if (direction[2]){y-=1}
+    if (direction[3]){x-=1}
+    if ((x > 0 && x < 9) && (y > 0 && y < 9)){
+        if (allFigures[getBoardValue(x,y)]){
                 //figure is blocking
-            if (allFigures[getBoardValue(xx,yy)]["figure_color"]===enemycolor){
-                return [getBoardValue(xx,yy)] 
+            if (allFigures[getBoardValue(x,y)]["figure_color"]===enemycolor){
+                return [getBoardValue(x,y)] 
             }
             else{
                 return null 
             }
         }else{  //no Figure there so do recursion
-            let recursion=getNextLinearMoves(xx, yy, direction, enemycolor)
+            let recursion=getNextLinearMoves(x, y, direction, enemycolor)
             if (recursion === null){
-                return [getBoardValue(xx, yy)]}
-            recursion.push(getBoardValue(xx,yy))
+                return [getBoardValue(x, y)]}
+            recursion.push(getBoardValue(x,y))
             return recursion
         }
     } return null
 
 }
-
 function getBoardValue(x, y){                        // 1,1->"A1"  3,1->"C1"
     return String(String.fromCharCode(64+x) + y)
 }
-
 function endTurn(){
     isWhitesTurn = !isWhitesTurn
 }
