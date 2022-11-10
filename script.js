@@ -10,8 +10,7 @@ fetch("settings.json")                                          //load settings-
 
 
 function init_start(settings) {
-    //set up chess board grid
-    for (let number=0; number<8; number++){
+    for (let number=0; number<8; number++){                      //set up chess board grid
         for (let letter=0; letter<8; letter++){
             let letter_value=""
             let div = document.createElement("div")
@@ -21,16 +20,14 @@ function init_start(settings) {
             letter_value=String.fromCharCode(65+letter)         //0=A, 1=B, 2=C...
             div.innerHTML=letter_value+(8-number)
             div.id=String(letter_value)+String(8-number)
-            if (letter % 2){                                    // Color-pattern the Chessboard
+            if (letter % 2){                                    
                 boardElement.children[letter+(number*8)-number%2].className="cell cellalt"
             }
         }
     }
-
     let start_positions=(settings["start_positions"])           // stored in settings.json {"A1": [isBlack, "rook"]}
     console.log(start_positions)
-    //fill figures in
-    for (var position in start_positions){                      //start_positions = {"A8" : [true, "rook"]...}
+    for (var position in start_positions){                      //fill in figures
         let img = document.createElement("img")
         let figure_type=start_positions[position][1]
         let figure_col= "white_figure"
@@ -197,7 +194,6 @@ function getLegalMoves(img){                                    //get legal move
 
 
 function getNextLinearMoves(x, y, direction, enemycolor){       //moves in a line to next board pice till end or figure // direction [top, right, down, left] ex topright:[true, true, false, false]
-
     if (direction[0]){y+=1}
     if (direction[1]){x+=1}
     if (direction[2]){y-=1}
@@ -218,7 +214,6 @@ function getNextLinearMoves(x, y, direction, enemycolor){       //moves in a lin
             return recursion
         }
     } return null
-
 }
 function getBoardValue(x, y){                                   // 1,1->"A1"  3,1->"C1"
     return String(String.fromCharCode(64+x) + y)
