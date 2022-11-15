@@ -4,7 +4,7 @@ var allFigures = {}
 var movesLog = []
 
 
-fetch("settings.json")                                          //load settings-> Starting board positions
+fetch("settings.json")                                          //async load settings-> Starting board positions
   .then(response => response.json())
   .then(json => init_start(json) );
 
@@ -26,7 +26,6 @@ function init_start(settings) {
         }
     }
     let start_positions=(settings["start_positions"])           // stored in settings.json {"A1": [isBlack, "rook"]}
-    console.log(start_positions)
     for (var position in start_positions){                      //fill in figures
         let img = document.createElement("img")
         let figure_type=start_positions[position][1]
@@ -79,7 +78,7 @@ function handleClick(clickedElement){
     } else if (allFigures[clickedElement.parentElement.id]["figure_color"]===playercolor){
         removeElementsByClassName("move_marker")                
         selectedMoves = {                                       // store selected img and all legal moves  :todo check if this is even beneficial/necessary
-            "moves" : getLegalMoves(clickedElement),
+            "moves" : getLegalMoves(clickedElement.parentElement.id),
             "img" : clickedElement,
         }
         for (move of selectedMoves["moves"]){                   //create move_markers on board
@@ -94,12 +93,11 @@ function handleClick(clickedElement){
 }
 
 
-function getLegalMoves(img){                                    //get legal moves for chosen img :todo rewrite so only uses choordinate instead of img                             
-    let pos = img.parentElement.id
+function getLegalMoves(position){                                    //get legal moves for chosen img :todo rewrite so only uses choordinate instead of img                             
     //change to xy coords->
-    let y = Number( pos.substring(1, 2) )
-    let x = Number( pos.substring(0, 1).charCodeAt(0)-64 )      //character to int A ->65-64=1 B=2...
-    let type = img.id
+    let y = Number( position.substring(1, 2) )
+    let x = Number( position.substring(0, 1).charCodeAt(0)-64 )      //character to int A ->65-64=1 B=2...
+    let type = allFigures[position]["figure_type"]
     let enemycolor= "white_figure"
     if (isWhitesTurn){enemycolor="black_figure"}
     let possibleMoves = []
