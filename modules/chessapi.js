@@ -71,29 +71,34 @@ class GameState {
         
         let moveFrom = move.substring(1,3)
         let moveTo = move.substring(3,5)
-        if(this.getMoves(moveFrom).includes(moveTo)){
-            //move is legal move
-            console.log(":todo logout  ||: made move: "+move)
-            makeMove(this, move)
-            this.moveHistory.push(move)                                 //log move made to history
-            this.isWhiteTurn=!this.isWhiteTurn
-            // :todo move king out of check or not possible to move
+        if(this.getMoves(moveFrom).includes(moveTo)){                   // move is legal move
+            //work on clone - object till we know king is not in check after move
+            let clone = structuredClone(this)                           // clone in case we "rollback" at the end if king is in check afer move
+            makeMove(clone, move)
+            clone.moveHistory.push(move)                                // log move made to history
+            clone.isWhiteTurn=!clone.isWhiteTurn
+            if (isKingInCheck(clone)) {return false}               // own king in check after move -> no real move -> return null
+            // make move permament
+            console.log(":todo log  ||: made move: "+move)
+            this.isWhiteTurn = clone.isWhiteTurn
+            this.moveHistory = clone.moveHistory
+            this.board = clone.board
             // :todo if no possible move -> game end
             return(move)
         } else {
             // move is not a possible move the figure can make
-            console.log(":todo logout  ||: illegal move: "+ move)
+            console.log(":todo log  ||: illegal move: "+ move)
             return false
         }
     }
 
     getMoves(position){
         if (!this.board[position]){
-            console.log(":todo logout  ||: no figure on field: "+position)
+            console.log(":todo log  ||: no figure on field: "+position)
             return []                                                   //there is no figure on the position
         }                                                               
         else if (this.board[position].isWhite===!this.isWhiteTurn){
-            console.log(":todo logout  ||: can't move enemys figure: "+position)
+            console.log(":todo log  ||: can't move enemys figure: "+position)
             return []                                                   //can not move enemy's figure on other's turn
         }
         return getLegalMoves(position, this)                            //else: return the legal moves the figure could make
@@ -137,8 +142,20 @@ function makeMove(game, move) {
             newFigureType= newFigureType.substr(0,1)
             game.board[moveTo] = {type : newFigureType, isWhite: game.isWhiteTurn}
         }
-        // :todo en passant. pice can move there. BUT CAPTURE OF "skipped" figure needs to happen aswell
+        // :todo en passant. figure can move there. BUT CAPTURE OF "skipped" figure needs to happen aswell
     }
+}
+
+/**return true if own king is in check  */
+function isKingInCheck(game){
+    //let oppositeKing = game.board.find({type:"K", isWhite: !game.isWhiteTurn})
+    for (let [key, value] of game.board){
+        let allMoves = game.getMoves(key)
+        
+        //:todo finish this. 
+
+    }
+    return false
 }
 
 
@@ -159,6 +176,7 @@ function getLegalMoves(pos, game){
     else if (game.board[pos].type==="N") { relativeToPositionMove = [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]]}
     else if (game.board[pos].type==="K") { relativeToPositionMove = [[1,0],[1,1],[0,1],[-1,0],[-1,1],[1,-1],[0,-1],[-1,-1]]}
 
+    //todo: king moves castling
 
    //calculate valid movement options into legalMoves=[]
     if (game.board[pos].type==="P") {
@@ -265,6 +283,7 @@ function getPawnMoves(game, x, y){
             legalMoves.push(pos)
         }
     }
+    //:todo pawn promotes "Pa7a8=X" to R,Q,B,N special case not shown as "different" moves. Has to be handled in client so far.
     return legalMoves
 }
 /**
@@ -278,19 +297,19 @@ module.exports = GameState
 
 
 //// test stuff :todo remove all above this when finishing
-const game = new GameState
 
+const game = new GameState
 
 game.tryMove("Pe2e4")
 game.tryMove("Pf7f6")
 game.tryMove("Qd1h5")
 game.terminalBoard()
-console.log(game.getMoves("c5"))
+console.log(game.getMoves("g7"))
 //console.log(game.getMoves("f5"))
 //console.log(game.getBoard())
 //devMove()
 
-//readline & input for testing api moves quickly :todo remove this later
+//readline & input for testing api moves 
 function devMove(){
     let readline = require('readline').createInterface({
         input: process.stdin,
