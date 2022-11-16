@@ -41,14 +41,13 @@ class GameState {
          }
         this.isWhiteTurn=isWhiteTurn
         this.board=startingBoard || defaultNewgameBoard
-        this.moveHistory = ["start"]
+        this.moveHistory = []
     }
     // visual output of current board state in console. only for debugging/coding
     terminalBoard(){ 
         console.log("------------------")
-        console.log("--AABBCCDDEEFFGGHH".toLowerCase())
         for (let number=1; number<9; number++){                      
-            let lineString = String(9-number)+"-"
+            let lineString = String(9-number)+"|"
             for (let letter=0; letter<8; letter++){
                 let letter_value = String.fromCharCode(97+letter)   //97="a"
                 if (this.board[letter_value+String(9-number)]){
@@ -57,7 +56,6 @@ class GameState {
                     lineString+=this.board[letter_value+String(9-number)].type+col
                 }else{lineString+="[]"}
             }
-            lineString+="-"+String(9-number)
             console.log(lineString)
         }
         console.log("--AABBCCDDEEFFGGHH".toLowerCase())
@@ -66,83 +64,68 @@ class GameState {
 
     getBoard(){return this.board}
 
-    /** move : string | like "Pe7f8x=N+" ChessNotationLike). */
+    /**
+    * input move : string | like "Pe7f8x=N+" ChessNotationLike).
+    */
     tryMove(move){
-        
-        let moveFrom = move.substring(1,3)
-        let moveTo = move.substring(3,5)
-        if(this.getMoves(moveFrom).includes(moveTo)){
-            //move is legal move
-            console.log(":todo logout  ||: made move: "+move)
-            makeMove(this, move)
-            this.moveHistory.push(move)                                 //log move made to history
-            this.isWhiteTurn=!this.isWhiteTurn
-            // :todo move king out of check or not possible to move
-            // :todo if no possible move -> game end
-            return(move)
+        // :todo only move if in getMove(pos), therefore is legal move
+        if (move === "O-O" || move === "0-0"){
+            //castle with h-side rook. black is row 8 white is 1
+            let row = 8                         
+            if (this.isWhiteTurn) { row=1 }
+            delete this.board["e"+String(row)]
+            this.board["f"+String(row)] = {type : "R", isWhite: this.isWhiteTurn}
+            this.board["g"+String(row)] = {type : "K", isWhite: this.isWhiteTurn}
+            delete this.board["h"+String(row)]
+        } else if (move ==="O-O-O" || move === "0-0-0") {
+            //castle with a-side rook. black is row 8 white is 1
+            let row = 8                         
+            if (this.isWhiteTurn) { row=1 }
+            console.log(row)
+            delete this.board["a"+String(row)]
+            this.board["c"+String(row)] = {type : "K", isWhite: this.isWhiteTurn}
+            this.board["d"+String(row)] = {type : "R", isWhite: this.isWhiteTurn}
+            delete this.board["e"+String(row)]
         } else {
-            // move is not a possible move the figure can make
-            console.log(":todo logout  ||: illegal move: "+ move)
-            return false
+            // innput like: "Pe7f8x=N+"  Pawn (P) moves from (e7) to (e8) while capturing (x) and promotes to a Knight (=N) setting enemy king in check (x)
+            let moveType = move.substr(0,1)
+            let moveFrom = move.substr(1,2)
+            let moveTo = move.substr(3,2)
+            let moveExtras = move.substr(5,4)
+           
+            //delete entry from where we moved from
+            delete this.board[moveFrom]
+            //fill new position
+            this.board[moveTo] = {type : moveType, isWhite: this.isWhiteTurn}
+
+            //special case Pawn Promotion to new Figure:
+            if(moveExtras.includes("=")){
+                let newFigureType = moveExtras.split('=')[1]
+                newFigureType= newFigureType.substr(0,1)
+                this.board[moveTo] = {type : newFigureType, isWhite: this.isWhiteTurn}
+            }
+            // :todo missing are enpassant special capture/move
+            // :todo move king out of check
         }
+        this.moveHistory.push(move)                                     //log move made to history
     }
 
     getMoves(position){
         if (!this.board[position]){
-            console.log(":todo logout  ||: no figure on field: "+position)
+            
             return []                                                   //there is no figure on the position
         }                                                               
         else if (this.board[position].isWhite===!this.isWhiteTurn){
-            console.log(":todo logout  ||: can't move enemys figure: "+position)
             return []                                                   //can not move enemy's figure on other's turn
         }
         return getLegalMoves(position, this)                            //else: return the legal moves the figure could make
     }
 }
 
-/** make Move on chessboard. does not check if possible/right/king-checked */
-function makeMove(game, move) {
-    if (move === "O-O" || move === "0-0"){
-        //castle with h-side rook. black is row 8 white is 1
-        let row = 8                         
-        if (game.isWhiteTurn) { row=1 }
-        delete game.board["e"+String(row)]
-        game.board["f"+String(row)] = {type : "R", isWhite: game.isWhiteTurn}
-        game.board["g"+String(row)] = {type : "K", isWhite: game.isWhiteTurn}
-        delete game.board["h"+String(row)]
-    } else if (move ==="O-O-O" || move === "0-0-0") {
-        //castle with a-side rook. black is row 8 white is 1
-        let row = 8                         
-        if (game.isWhiteTurn) { row=1 }
-        console.log(row)
-        delete game.board["a"+String(row)]
-        game.board["c"+String(row)] = {type : "K", isWhite: game.isWhiteTurn}
-        game.board["d"+String(row)] = {type : "R", isWhite: game.isWhiteTurn}
-        delete game.board["e"+String(row)]
-    } else {
-        // innput like: "Pe7f8x=N+"  Pawn (P) moves from (e7) to (e8) while capturing (x) and promotes to a Knight (=N) setting enemy king in check (x)
-        let moveFrom = move.substr(1,2)
-        let moveType = game.board[moveFrom].type
-        let moveTo = move.substr(3,2)
-        let moveExtras = move.substr(5,4)
-    
-        //delete entry from where we moved from
-        delete game.board[moveFrom]
-        //fill new position
-        game.board[moveTo] = {type : moveType, isWhite: game.isWhiteTurn}
 
-        //special case Pawn Promotion to new Figure:
-        if(moveExtras.includes("=")){
-            let newFigureType = moveExtras.split('=')[1]
-            newFigureType= newFigureType.substr(0,1)
-            game.board[moveTo] = {type : newFigureType, isWhite: game.isWhiteTurn}
-        }
-        // :todo en passant. pice can move there. BUT CAPTURE OF "skipped" figure needs to happen aswell
-    }
-}
-
-
-/** return:["g7", "h6"] gets all legal moves for figure on position pos:"f7". does not check for King beeing in "Check" */
+/**
+* return:["g7", "h6"] gets all legal moves for figure on position pos:"f7". does not check for King beeing in "Check"
+*/
 function getLegalMoves(pos, game){
     //
     let x = Number( pos.substring(0, 1).charCodeAt(0)-96 )
@@ -194,7 +177,9 @@ function getLegalMoves(pos, game){
     return legalMoves
 }
 
-/** returns : ["a2", "a3"] all moves in a line till end or figure is blocking. return null if none */
+/**
+* returns : ["a2", "a3"] all moves in a line till end or figure is blocking. return null if none
+*/
 function getNextLinearMoves(game, x, y, direction){             //moves in a line to next board pice till end or figure // direction [top, right, down, left] ex topright:[true, true, false, false]
     let enemycolor = !game.isWhiteTurn
     if (direction[0]){y+=1}
@@ -277,15 +262,20 @@ function getBoardValue(x, y){
 module.exports = GameState
 
 
-//// test stuff :todo remove all above this when finishing
+//// test stuff :todo remove all above this when finished
 const game = new GameState
 
 
-game.tryMove("Pe2e4")
-game.tryMove("Pf7f6")
-game.tryMove("Qd1h5")
+game.tryMove("Pc2c4")
+game.tryMove("Pd7d6")
+game.tryMove("Pc4c5")
+game.tryMove("Qd8h4")
+game.tryMove("Pb7b5")
 game.terminalBoard()
 console.log(game.getMoves("c5"))
+
+let test = []
+console.log(test.includes("a4"))
 //console.log(game.getMoves("f5"))
 //console.log(game.getBoard())
 //devMove()
