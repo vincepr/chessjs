@@ -1,4 +1,3 @@
-// using chess notation R: Rook, N: Knight, B: Bishop, Q:Queen, K:King, P:Pawn (pawn added) 
 
 class GameState {
     constructor(isWhiteTurn=true, startingBoard){
@@ -40,11 +39,11 @@ class GameState {
         this.board=startingBoard || defaultNewgameBoard
         this.moveHistory = []
     }
-    // visual output of current board state in console mostly for debugging
+    // visual output of current board state in console. only for debugging/coding
     terminalBoard(){ 
-        console.log("----------------")
+        console.log("------------------")
         for (let number=1; number<9; number++){                      
-            let lineString = ""
+            let lineString = String(9-number)+"|"
             for (let letter=0; letter<8; letter++){
                 let letter_value = String.fromCharCode(97+letter)   //97="a"
                 if (this.board[letter_value+String(9-number)]){
@@ -55,7 +54,8 @@ class GameState {
             }
             console.log(lineString)
         }
-        console.log("----------------")
+        console.log("--AABBCCDDEEFFGGHH".toLowerCase())
+        console.log("------------------")
     }
 
     getBoard(){return this.board}
@@ -76,7 +76,6 @@ class GameState {
             //castle with a-side rook. black is row 8 white is 1
             let row = 8                         
             if (this.isWhiteTurn) { row=1 }
-            console.log(row)
             delete this.board["a"+String(row)]
             this.board["c"+String(row)] = {type : "K", isWhite: this.isWhiteTurn}
             this.board["d"+String(row)] = {type : "R", isWhite: this.isWhiteTurn}
@@ -124,24 +123,45 @@ function getLegalMoves(pos, game){
     else if (game.board[pos].type==="B") { straightLineMove = [[true,true,false,false],[false,true,true,false],[false,false,true,true],[true,false,false,true]]}
     else if (game.board[pos].type==="N") { relativeToPositionMove = [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]]}
     else if (game.board[pos].type==="K") { relativeToPositionMove = [[1,0],[1,1],[0,1],[-1,0],[-1,1],[1,-1],[0,-1],[-1,-1]]}
-    else if (game.board[pos].type==="P") {
-        //full logic here? or do proper?
+
+
+   
+    if (game.board[pos].type==="P") {
+    // pawn movement got special treatment
     }
-
-
-    if (straightLineMove){
+    else if (straightLineMove){
+    // all straight moves if there are any
         for (direction of straightLineMove) {
-            possibleMoves=getNextLinearMoves(game, x, y, direction)
+            legalMoves=getNextLinearMoves(game, x, y, direction)
             if (!(possibleMoves === null)){
                 for (move of possibleMoves){legalMoves.push(move)}
                 }
         }
+    } else if(relativeToPositionMove) {
+    // all relative moves if there are any
+        for (move of relativeToPositionMove){
+            let xx = x + move[0]
+            let yy = y + move[1]
+            if((xx > 0 && xx < 9) && (yy > 0 && yy < 9) ){              // board edges
+                possibleMoves.push(getBoardValue(xx, yy))}
+        }
+        for (move of possibleMoves){
+            if(!game.board[move]){                                                                      
+                legalMoves.push(move)
+            }
+            if(game.board[move]  &&  game.board[move].type) {       
+                legalMoves.push(move)
+            }
+        }
     }
+
+
     return legalMoves
 }
 
-function getNextLinearMoves(game, x, y, direction){       //moves in a line to next board pice till end or figure // direction [top, right, down, left] ex topright:[true, true, false, false]
-    let enemycolor= game.isWhiteTurn
+
+function getNextLinearMoves(game, x, y, direction){             //moves in a line to next board pice till end or figure // direction [top, right, down, left] ex topright:[true, true, false, false]
+    let enemycolor = !game.isWhiteTurn
     if (direction[0]){y+=1}
     if (direction[1]){x+=1}
     if (direction[2]){y-=1}
@@ -155,7 +175,7 @@ function getNextLinearMoves(game, x, y, direction){       //moves in a line to n
                 return null 
             }
         }else{                                                  //no Figure there so do recursion
-            let recursion=getNextLinearMoves(x, y, direction, enemycolor)
+            let recursion=getNextLinearMoves(game,x, y, direction, enemycolor)
             if (recursion === null){
                 return [getBoardValue(x, y)]}
             recursion.push(getBoardValue(x,y))
@@ -163,39 +183,137 @@ function getNextLinearMoves(game, x, y, direction){       //moves in a line to n
         }
     } return null
 }
-
 function getBoardValue(x, y){                                   // 1,1->"A1"  3,1->"C1"
-    return String(String.fromCharCode(97+x) + y)
+    return String(String.fromCharCode(96+x) + y)
+}
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const session = new GameState
+var selectedMoves = []
+init_board()
+redraw_figures()
+
+function init_board() {
+    for (let number=0; number<8; number++){                      //set up chess board grid
+        for (let letter=0; letter<8; letter++){
+            let letter_value=""
+            let div = document.createElement("div")
+            div.className="cell"
+            let boardElement = document.getElementById("board")
+            boardElement.appendChild(div)
+            letter_value=String.fromCharCode(65+letter)         //0=A, 1=B, 2=C...
+            div.innerHTML=letter_value+(8-number)
+            div.id=String(letter_value.toLowerCase())+String(8-number)
+            if (letter % 2){                                    
+                boardElement.children[letter+(number*8)-number%2].className="cell cellalt"
+            }
+        }
+    }
 }
 
+function redraw_figures(){
+    let board=session.board          // stored in settings.json {"A1": [isBlack, "rook"]}
+    console.log(board)
+    for (var pos in board){                      //fill in figures
+        let img = document.createElement("img")
+        let figure_type=board[pos].type
+        let figure_col= "black_figure"
+        if (figure_type==="B"){figure_type="bishop"}
+        if (figure_type==="P"){figure_type="pawn"}
+        if (figure_type==="R"){figure_type="rook"}
+        if (figure_type==="Q"){figure_type="queen"}
+        if (figure_type==="N"){figure_type="knight"}
+        if (figure_type==="K"){figure_type="king"}
 
+        img.src=`img/b_${figure_type}.png`
+        if (board[pos].isWhite){
+            img.src=`img/w_${figure_type}.png`
+            figure_col="white_figure"
+        }
+        img.id=figure_type
+        img.className="figure"
+        img.onclick = () => { handleClick(img) }
+        document.getElementById(pos).appendChild(img)
+    }
+}
 
+function handleClick(clickedElement){
+    let playercolor = "black_figure"
+    let enemycolor = "white_figure"
+    if (session.isWhiteTurn) {[playercolor, enemycolor] = [enemycolor, playercolor]}
+    
+    if (clickedElement.className==="move_marker"){
+        if(allFigures[clickedElement.parentElement.id]){
+            //move while capturing
+            let img = selectedMoves["img"]
+            let targetCell = clickedElement.parentElement
+            movesLog.push(img.parentElement.id + ">" + targetCell.id+" captured: "+allFigures[targetCell.id]["figure_type"])
+            targetCell.removeChild(allFigures[targetCell.id]["img"])
+            allFigures[targetCell.id] = allFigures[img.parentElement.id]
+            delete allFigures[img.parentElement.id]
+            targetCell.appendChild(img)
+        } else{
+            // move without capture
+            let img = selectedMoves["img"]
+            let targetCell = clickedElement.parentElement
+            movesLog.push(img.parentElement.id + ">" + targetCell.id)
+            allFigures[targetCell.id] = allFigures[img.parentElement.id]
+            delete allFigures[img.parentElement.id]
+            targetCell.appendChild(img)
+        }
+        removeElementsByClassName("move_marker")
+        selectedMoves = null
+        endTurn()
+    } else {
+        removeElementsByClassName("move_marker")                
+        selectedMoves = {                                       // store selected img and all legal moves  :todo check if this is even beneficial/necessary
+            "moves" : session.getMoves(String(clickedElement.parentElement.id)),
+            "img" : clickedElement,
+        }
+        for (move of selectedMoves["moves"]){                   //create move_markers on board
+            let img = document.createElement("img")
+            img.src = `img/marker.png`
+            img.className="move_marker"
+            img.onclick = () => { handleClick(img) }
+            document.getElementById(move).appendChild(img)
+        }
 
-//// test stuff :todo remove all above this when finished
-const game = new GameState
+    }
+}
 
-
-
-game.doMove("Pc2c4")
-game.doMove("Pd2d3")
-game.doMove("Bc1e3")
-game.doMove("Pa2a8x=Q+")
-game.terminalBoard()
-console.log(game.board.e3)
-console.log(game.getMoves("e3"))
-
-//console.log(game.getBoard())
-
-/*
-//readline & input for testing api moves quickly :todo remove this later
-const readline = require('readline').createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-  
-  readline.question('Who are you?', name => {
-    console.log(`Hey there ${name}!`);
-    readline.close();
-  });
-
-  */
+function removeElementsByClassName(className){
+    let elements = document.getElementsByClassName(className);
+    while(elements.length > 0){
+        elements[0].parentNode.removeChild(elements[0]);
+    }
+}
