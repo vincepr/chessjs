@@ -30,9 +30,9 @@ function init_start(settings) {
         let img = document.createElement("img")
         let figure_type=start_positions[position][1]
         let figure_col= "white_figure"
-        img.src=img.src=`img/w_${figure_type}.png`
+        img.src=img.src=`../img/w_${figure_type}.png`
         if (start_positions[position][0]){
-            img.src=`img/b_${figure_type}.png`
+            img.src=`../img/b_${figure_type}.png`
             figure_col="black_figure"
         }
         img.id=figure_type
@@ -83,7 +83,7 @@ function handleClick(clickedElement){
         }
         for (move of selectedMoves["moves"]){                   //create move_markers on board
             let img = document.createElement("img")
-            img.src = `img/marker.png`
+            img.src = `../img/marker.png`
             img.className="move_marker"
             img.onclick = () => { handleClick(img) }
             document.getElementById(move).appendChild(img)

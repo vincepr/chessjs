@@ -1,7 +1,5 @@
 // using chess notation R: Rook, N: Knight, B: Bishop, Q:Queen, K:King, P:Pawn (pawn added) 
 
-const { dir } = require('console')
-
 class GameState {
     constructor(isWhiteTurn=true, startingBoard){
         let  defaultNewgameBoard = {
@@ -204,8 +202,8 @@ function getNextLinearMoves(game, x, y, direction){             //moves in a lin
 }
 
 /**
- * returns : ["a1", "a2"] all possible moves selected pawn on position x,y can make including captures (& en passant :todo)
- */
+* returns : ["a1", "a2"] all possible moves selected pawn on position x,y can make including captures (& en passant :todo)
+*/
 function getPawnMoves(game, x, y){
     // set direction up/down +/-1 as forward
     let legalMoves = []
