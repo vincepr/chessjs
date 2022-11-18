@@ -1,8 +1,18 @@
-// using chess notation R: Rook, N: Knight, B: Bishop, Q:Queen, K:King, P:Pawn (pawn added) 
+/**
+ * load class ChessGame and interact only with it by using:
+ * .getMoves("a1")->["a2","a3","a4"]   
+ * .tryMove("Ra1a4")->returns move if made or false if not possible. returns "... gameover:draw"   "... gameover:winnerIsWhite:true"  
+ * .getBoard()->{"a1":{type: "R", isWhite:false}} 
+ * 
+ * using chess-notation like R: Rook, N: Knight, B: Bishop, Q:Queen, K:King, P:Pawn (pawn added) 
+ * 
+ */
 
-/** .getMoves("a1")->["a2","a3","a4"]   
- *  .tryMove("Ra1a4")->bool     
- *  .getBoard()->{"a1":{type: "R", isWhite:false}}  */
+
+/** .getMoves("a1") -> ["a2","a3","a4"]   
+ *  .tryMove("Ra1a4") -> bool     
+ *  .getBoard() -> {"a1":{type: "R", isWhite:false}}  
+ *  .getMoveHistory() -> ["start", "Pb2b3", "gameover:draw"] */
 class ChessGame {
     constructor(isWhiteTurn=true, startingBoard){
         let  defaultNewgameBoard = {
@@ -67,6 +77,9 @@ class ChessGame {
     }
 
 
+    getMoveHistory(){return this.moveHistory}
+
+
     getBoard(){return this.board}
 
 
@@ -74,7 +87,6 @@ class ChessGame {
     tryMove(move){
         let moveFrom = move.substring(1,3)
         let moveTo = move.substring(3,5)
-        console.log()
         if (this.moveHistory.slice(-1)[0].includes("gameover")){        // game has already ended
             return false
         }
@@ -86,43 +98,38 @@ class ChessGame {
             clone.isWhiteTurn=!clone.isWhiteTurn
             if (isKingInCheck(clone)) {
                 // own king is in check -> cant do move
-                console.log(":todo log | king in self-check move not made: "+move)
+                // console.log(":dev log | king in self-check move not made: "+move)
                 return false
             }               
             // make move permament 
-            console.log(":todo log  ||: made move: "+move)
             this.isWhiteTurn = clone.isWhiteTurn
             this.moveHistory = clone.moveHistory
             this.board = clone.board
+            // console.log(":dev log  ||: made move: "+move)
 
             // check for draw by repetition
             if (checkDrawByRepetiton(clone.moveHistory)){
                 this.moveHistory.push("gameover:draw") 
                 move+="gameover:draw"
-                console.log(":todo log ||"+move)
+                // console.log(":dev log ||"+move)
                 return move
             }
 
             // did we put enemy king in check?
             clone.isWhiteTurn = !clone.isWhiteTurn
             if (isKingInCheck(clone)){
+                move+="+"
                 clone.isWhiteTurn = !clone.isWhiteTurn
                 if (isNoPossibleMovesLeft(clone)){
                     this.moveHistory.push("gameover:winnerIsWhite:"+!this.isWhiteTurn) 
                     move+="gameover:winnerIsWhite"+!this.isWhiteTurn
-                    console.log(":todo log ||"+move)
-                    console.log(move)
-                    console.log(move)
                 }
-                
-                //:todo if no possible move -> game end
-                move+="+"
-                console.log(":todo log ||: enemy King put in check "+move)
+                // console.log(":dev log ||: enemy King put in check "+move)
             }
             return(move)    // return the move we just made
         } else {
             // move is not a possible move the figure can make
-            console.log(":todo log  ||: impossible move tried: "+ move)
+            // console.log(":dev log  ||: impossible move tried: "+ move)
             return false
         }
     }
@@ -133,11 +140,11 @@ class ChessGame {
             return []
         }
         else if (!this.board[position]){
-            console.log(":todo log  ||: no figure on field: "+position)
+            // console.log(":dev log  ||: no figure on field: "+position)
             return []                                                   //there is no figure on the position
         }                                                               
         else if (this.board[position].isWhite===!this.isWhiteTurn){
-            console.log(":todo log  ||: can't move enemys figure: "+position)
+            // console.log(":dev log  ||: can't move enemys figure: "+position)
             return []                                                   //can not move enemy's figure on other's turn
         }
         return getLegalMoves(position, this)                            //else: return the legal moves the figure could make
@@ -159,7 +166,6 @@ function makeMove(game, move) {
         //castle with a-side rook. black is row 8 white is 1
         let row = 8                         
         if (game.isWhiteTurn) { row=1 }
-        console.log(row)
         delete game.board["a"+String(row)]
         game.board["c"+String(row)] = {type : "K", isWhite: game.isWhiteTurn}
         game.board["d"+String(row)] = {type : "R", isWhite: game.isWhiteTurn}
@@ -178,6 +184,7 @@ function makeMove(game, move) {
 
         //special case Pawn Promotion to new Figure:
         if(moveExtras.includes("=")){
+            //:todo extra checks here to see if figure is pawn and on right side of the border to avoid inputing wrong promotions/ cheats -> implement return false and breaking out of parent with false aswell
             let newFigureType = moveExtras.split('=')[1]
             newFigureType= newFigureType.substr(0,1)
             game.board[moveTo] = {type : newFigureType, isWhite: game.isWhiteTurn}
@@ -194,22 +201,14 @@ function isNoPossibleMovesLeft(game){
     clone.isWhiteTurn = game.isWhiteTurn
     clone.board = game.board
     clone.moveHistory = game.moveHistory
-    console.log("this case")
     for(let [x,y] in clone.board){
         if (clone.board[x+y].isWhite === clone.isWhiteTurn){
-            console.log("figure tried: "+x+y)
             let possibleMoves= clone.getMoves(x+y)
-            console.log(clone.getMoves(x+y))
             if (possibleMoves.length > 0){
                 for (pos of possibleMoves){
-                    console.log(pos)
                     // contruct move we are trying:
                     let move = clone.board[x+y].type+x+y+String(pos)
-                    console.log("trying move: "+move)
-                    let validMove= clone.tryMove(move)
-                    console.log("answer is: ")
-                    console.log(validMove)
-                    if (validMove){
+                    if (clone.tryMove(move)){
                         return false                        // found a move to get out of check
                     }
                 }
@@ -240,7 +239,6 @@ function isKingInCheck(game){
             return true                                                 // king is of enemy color to figure && king could be attacked
         }
     }
-    console.log("ran out of options -> king is checkmate")
     return false                                                        // king is not in check
 }
 
@@ -248,7 +246,6 @@ function isKingInCheck(game){
 
 /** return:["g7", "h6"] gets all legal moves for figure on position pos:"f7". does not check for King beeing in "Check" */
 function getLegalMoves(pos, game){
-    //
     let x = Number( pos.substring(0, 1).charCodeAt(0)-96 )
     let y = Number( pos.substring(1, 2) )
     let possibleMoves = []                                              // moves the chess figure could theoretically make
@@ -296,6 +293,7 @@ function getLegalMoves(pos, game){
         }
     }
     // :todo add castling special movements here if king selected + conditions met
+    // :todo indicate if Pawn can promote to queen, rook, knight, bishop
     return legalMoves
 }
 
@@ -328,7 +326,7 @@ function getNextLinearMoves(game, x, y, direction){             //moves in a lin
 
 
 
-/** returns : ["a1", "a2"] all possible moves selected pawn on position x,y can make including captures (& en passant :todo) */
+/** returns : ["a1", "a2"] all possible moves selected pawn on position x,y can make including captures */
 function getPawnMoves(game, x, y){
     // set direction up/down +/-1 as forward
     let legalMoves = []
@@ -401,12 +399,15 @@ function getBoardValue(x, y){
 module.exports = ChessGame
 
 
-//// test stuff :todo remove all above this when finishing
 
-const game = new ChessGame
+
+
+
+//// test examples 
 
 /*
 // example moves for 3 fold repetition      //
+game = new ChessGame
 game.tryMove("Pe2e4")
 game.tryMove("Pf7f6")
 game.tryMove("Qd1h5")
@@ -423,35 +424,62 @@ game.tryMove("Qh4h5")
 game.tryMove("Kf7e8")
 game.tryMove("Qh5h4")
 game.tryMove("Ke8f7")       // draw by repetiton -> game is over cant make this move
+game.terminalBoard()
+console.log(game.moveHistory)
+delete game
 */
 
 
 
+/*
 //example moves for checkmate in 4 turns    //
+game = new ChessGame
 game.tryMove("Pf2f3")
 game.tryMove("Pe7e5")
 game.tryMove("Pg2g4")
 game.tryMove("Qd8h4")
 game.tryMove("Pg4g5")      // cant move should be in checkmate
-console.log(game.moveHistory)
 game.tryMove("Pg4g5")
+game.terminalBoard()
+console.log(game.moveHistory)
+delete game
+
+*/
+
 
 /*
 // example of getting checked a few times but no mate!      //
+game = new ChessGame
 game.tryMove("Pe2e4")
 game.tryMove("Pf7f5")
 game.tryMove("Qd1h5")       //in Check
 game.tryMove("Pg7g5")       // wrong move -> cant move if in check
 game.tryMove("Pg7g6")       //forced 1 move left
 game.tryMove("Qh5g6")       //in Check
+game.terminalBoard()
+console.log(game.moveHistory)
+delete game
+
 */
 
+
+
+
+
+
+// example of en passant moves:     //
+game = new ChessGame
+game.tryMove("Pd2d4")
+game.tryMove("Pa7a6")
+game.tryMove("Pd4d5")       //in position to capture using en passant
+game.tryMove("Pc7c5")       //could be captured this turn
+console.log(game.getMoves("d5"))            // returns capture move c6->Pd5c6    
+game.tryMove("Pa2a3")       
+game.tryMove("Pe7e5")       // could be captured this turn but other one should not
+console.log(game.getMoves("d5"))
+game.tryMove("Pd5c6")      //turn to late so cant en passant left ->move fails
+game.tryMove("Pd5e6")      //turn should capture en passant
 game.terminalBoard()
-//console.log(game.getMoves("f5"))
-//console.log(game.getBoard())
-//devInput()
-
-//readline & input for testing api moves 
-
-
+console.log(game.moveHistory)
+delete game
 
