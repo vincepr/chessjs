@@ -3,7 +3,7 @@
 /** .getMoves("a1")->["a2","a3","a4"]   
  *  .tryMove("Ra1a4")->bool     
  *  .getBoard()->{"a1":{type: "R", isWhite:false}}  */
-class GameState {
+class ChessGame {
     constructor(isWhiteTurn=true, startingBoard){
         let  defaultNewgameBoard = {
             "a8" : {type : "R", isWhite : false},
@@ -75,10 +75,10 @@ class GameState {
         let moveFrom = move.substring(1,3)
         let moveTo = move.substring(3,5)
         console.log()
-        if (this.moveHistory.slice(-1)[0].includes("gameover")){                 // game has already ended
+        if (this.moveHistory.slice(-1)[0].includes("gameover")){        // game has already ended
             return false
         }
-        else if(this.getMoves(moveFrom).includes(moveTo)){               // move is legal move
+        else if(this.getMoves(moveFrom).includes(moveTo)){              // move is legal move
             //work on clone-object till we know king is not in check after move
             let clone = structuredClone(this)                           // clone in case we "rollback" at the end if king is in check afer move
             makeMove(clone, move)
@@ -98,15 +98,28 @@ class GameState {
             // check for draw by repetition
             if (checkDrawByRepetiton(clone.moveHistory)){
                 this.moveHistory.push("gameover:draw") 
-                return move + "draw"
+                move+="gameover:draw"
+                console.log(":todo log ||"+move)
+                return move
             }
 
-            // check for checkmate
-            if (isKingOutOfMoves(this)){
-                console.log("KING OUT OF MOVES CHECKMATE--!!!! !! !!!!")
+            // did we put enemy king in check?
+            clone.isWhiteTurn = !clone.isWhiteTurn
+            if (isKingInCheck(clone)){
+                clone.isWhiteTurn = !clone.isWhiteTurn
+                if (isNoPossibleMovesLeft(clone)){
+                    this.moveHistory.push("gameover:winnerIsWhite:"+!this.isWhiteTurn) 
+                    move+="gameover:winnerIsWhite"+!this.isWhiteTurn
+                    console.log(":todo log ||"+move)
+                    console.log(move)
+                    console.log(move)
+                }
+                
+                //:todo if no possible move -> game end
+                move+="+"
+                console.log(":todo log ||: enemy King put in check "+move)
             }
-            // :todo if no possible move -> game end
-            return(move)
+            return(move)    // return the move we just made
         } else {
             // move is not a possible move the figure can make
             console.log(":todo log  ||: impossible move tried: "+ move)
@@ -173,19 +186,37 @@ function makeMove(game, move) {
     }
 }
 
-
-function isKingOutOfMoves(game){
-    for(let [x,y] in game.board){
-        if (game.board[x+y].isWhite === game.isWhiteTurn){
-            //console.log(x+y)
-            //console.log(game.getMoves(x+y))}
-            // if (game.getMoves(x+y)){return true}
-
-            // 1) todo make clone here -> make possible move -> if is kingincheck ->rollback and try next
-            // 2) alternative idea: check if king is in check at end of turn set flag "....+" in movehistory
-            //      ->then in getMoves() only allow moves that relieve that check.
+/**return:bool if the next player to make a turn is in checkmate because he has no moves left.*/
+function isNoPossibleMovesLeft(game){
+    // structuredClone() used earlier does not clone class only the Object-> cant call .tryMove() 
+    //-> so a full new class instance is needed. To tryMoves() on without changing the original game
+    let clone = new ChessGame
+    clone.isWhiteTurn = game.isWhiteTurn
+    clone.board = game.board
+    clone.moveHistory = game.moveHistory
+    console.log("this case")
+    for(let [x,y] in clone.board){
+        if (clone.board[x+y].isWhite === clone.isWhiteTurn){
+            console.log("figure tried: "+x+y)
+            let possibleMoves= clone.getMoves(x+y)
+            console.log(clone.getMoves(x+y))
+            if (possibleMoves.length > 0){
+                for (pos of possibleMoves){
+                    console.log(pos)
+                    // contruct move we are trying:
+                    let move = clone.board[x+y].type+x+y+String(pos)
+                    console.log("trying move: "+move)
+                    let validMove= clone.tryMove(move)
+                    console.log("answer is: ")
+                    console.log(validMove)
+                    if (validMove){
+                        return false                        // found a move to get out of check
+                    }
+                }
+            }
     }}
-    return false
+    
+    return true
 }
 
 
@@ -209,6 +240,7 @@ function isKingInCheck(game){
             return true                                                 // king is of enemy color to figure && king could be attacked
         }
     }
+    console.log("ran out of options -> king is checkmate")
     return false                                                        // king is not in check
 }
 
@@ -345,7 +377,7 @@ function getPawnMoves(game, x, y){
 }
 
 
-/** checks if position repeated 3 times returns:bool */
+/** checks if last positions repeated 3 times returns:bool */
 function checkDrawByRepetiton(moveHistory){
     let last9Moves = moveHistory.slice(-9)                      // last 9 moves
     let lastMoveP1= last9Moves.slice(-1)[0]                     // last move made by player
@@ -366,12 +398,12 @@ function getBoardValue(x, y){
 }
 
 
-module.exports = GameState
+module.exports = ChessGame
 
 
 //// test stuff :todo remove all above this when finishing
 
-const game = new GameState
+const game = new ChessGame
 
 /*
 // example moves for 3 fold repetition      //
@@ -394,17 +426,17 @@ game.tryMove("Ke8f7")       // draw by repetiton -> game is over cant make this 
 */
 
 
-/*
+
 //example moves for checkmate in 4 turns    //
 game.tryMove("Pf2f3")
 game.tryMove("Pe7e5")
 game.tryMove("Pg2g4")
 game.tryMove("Qd8h4")
 game.tryMove("Pg4g5")      // cant move should be in checkmate
-game.getMoves()
-*/
+console.log(game.moveHistory)
+game.tryMove("Pg4g5")
 
-
+/*
 // example of getting checked a few times but no mate!      //
 game.tryMove("Pe2e4")
 game.tryMove("Pf7f5")
@@ -412,7 +444,7 @@ game.tryMove("Qd1h5")       //in Check
 game.tryMove("Pg7g5")       // wrong move -> cant move if in check
 game.tryMove("Pg7g6")       //forced 1 move left
 game.tryMove("Qh5g6")       //in Check
-
+*/
 
 game.terminalBoard()
 //console.log(game.getMoves("f5"))

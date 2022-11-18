@@ -186,7 +186,8 @@ function getNextLinearMoves(game, x, y, direction){             //moves in a lin
 function getBoardValue(x, y){                                   // 1,1->"A1"  3,1->"C1"
     return String(String.fromCharCode(96+x) + y)
 }
-*/
+
+
 
 
 
@@ -255,9 +256,9 @@ function redraw_figures(){
         if (figure_type==="N"){figure_type="knight"}
         if (figure_type==="K"){figure_type="king"}
 
-        img.src=`img/b_${figure_type}.png`
+        img.src=`../img/b_${figure_type}.png`
         if (board[pos].isWhite){
-            img.src=`img/w_${figure_type}.png`
+            img.src=`../img/w_${figure_type}.png`
             figure_col="white_figure"
         }
         img.id=figure_type
@@ -271,7 +272,7 @@ function handleClick(clickedElement){
     let playercolor = "black_figure"
     let enemycolor = "white_figure"
     if (session.isWhiteTurn) {[playercolor, enemycolor] = [enemycolor, playercolor]}
-    
+
     if (clickedElement.className==="move_marker"){
         if(allFigures[clickedElement.parentElement.id]){
             //move while capturing
@@ -295,14 +296,19 @@ function handleClick(clickedElement){
         selectedMoves = null
         endTurn()
     } else {
+        console.log("creating move markers: ")
         removeElementsByClassName("move_marker")                
+        console.log("selected moves: ")
+        console.log(session.getMoves("a2"))
         selectedMoves = {                                       // store selected img and all legal moves  :todo check if this is even beneficial/necessary
             "moves" : session.getMoves(String(clickedElement.parentElement.id)),
             "img" : clickedElement,
         }
+        console.log("selected moves: ")
+        console.log(selectedMoves)
         for (move of selectedMoves["moves"]){                   //create move_markers on board
             let img = document.createElement("img")
-            img.src = `img/marker.png`
+            img.src = `../img/marker.png`
             img.className="move_marker"
             img.onclick = () => { handleClick(img) }
             document.getElementById(move).appendChild(img)
