@@ -172,10 +172,10 @@ function makeMove(game, move) {
         delete game.board["e"+String(row)]
     } else {
         // innput like: "Pe7f8x=N+"  Pawn (P) moves from (e7) to (e8) while capturing (x) and promotes to a Knight (=N) setting enemy king in check (x)
-        let moveFrom = move.substr(1,2)
+        let moveFrom = move.slice(1,3)
         let moveType = game.board[moveFrom].type
-        let moveTo = move.substr(3,2)
-        let moveExtras = move.substr(5,4)
+        let moveTo = move.slice(3,5)
+        let moveExtras = move.slice(5)
     
         //delete entry from where we moved from
         delete game.board[moveFrom]
@@ -186,9 +186,12 @@ function makeMove(game, move) {
         if(moveExtras.includes("=")){
             //:todo extra checks here to see if figure is pawn and on right side of the border to avoid inputing wrong promotions/ cheats -> implement return false and breaking out of parent with false aswell
             let newFigureType = moveExtras.split('=')[1]
-            newFigureType= newFigureType.substr(0,1)
+            newFigureType= newFigureType.slice(0,1)
             game.board[moveTo] = {type : newFigureType, isWhite: game.isWhiteTurn}
         }
+
+        //check if en passant move was made -> remove enemy pawn if yes
+        
         // :todo en passant. figure can move there. BUT CAPTURE OF "skipped" figure needs to happen aswell
     }
 }
@@ -205,9 +208,9 @@ function isNoPossibleMovesLeft(game){
         if (clone.board[x+y].isWhite === clone.isWhiteTurn){
             let possibleMoves= clone.getMoves(x+y)
             if (possibleMoves.length > 0){
-                for (pos of possibleMoves){
-                    // contruct move we are trying:
-                    let move = clone.board[x+y].type+x+y+String(pos)
+                for (xy of possibleMoves){
+                    // contruct move to try:
+                    let move = String(clone.board[x+y].type)+String(x+y)+String(xy)
                     if (clone.tryMove(move)){
                         return false                        // found a move to get out of check
                     }
@@ -353,7 +356,7 @@ function getPawnMoves(game, x, y){
             }
         }
     }
-    //check for en passant zug
+    //check for en passant move
     let previousMove = game.moveHistory[game.moveHistory.length - 1]
     let previousX = previousMove.substring(1,2).charCodeAt(0)-96        //substring that stores a-h position then string->number
     //check if last move went from x7->x5
