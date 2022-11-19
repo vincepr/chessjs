@@ -359,21 +359,21 @@ function getPawnMoves(game, x, y){
             }
         }
     }
-    
+
     //check for en passant move
     let previousMove = game.moveHistory[game.moveHistory.length - 1]
     let previousX = previousMove.substring(1,2).charCodeAt(0)-96        //substring that stores a-h position then string->number
     //check if last move went from x7->x5
     if(game.isWhiteTurn && /P\w7\w5/.test(previousMove)){    
         //check if selected pawn is in position to capture it
-        if (y===5 && (x===previousX-1) || (x===previousX+1)){
+        if (y===5 && (x===previousX-1) ||y===5 && (x===previousX+1)){
             pos = getBoardValue( previousX, 6 )
             legalMoves.push(pos)
             // console.log("en passant posible"+pos) // :todo en passant might be bugged and be possible to often check at some later point
         }
     } else if (!game.isWhiteTurn && /P\w2\w4/.test(previousMove)){
         //check if selected pawn is in position to capture it
-        if (y===4 && (x===previousX-1) || (x===previousX+1)){
+        if (y===4 && (x===previousX-1) ||y===4 &&  (x===previousX+1)){
             pos = getBoardValue( previousX, 5 )
             legalMoves.push(pos)
         }
@@ -391,13 +391,13 @@ function isEnPassantPossible(game, x, y){
     //check if last move went from x7->x5
     if(game.isWhiteTurn && /P\w7\w5/.test(previousMove)){    
         //check if selected pawn is in position to capture it
-        if (y===5 && (x===previousX-1) || (x===previousX+1)){
+        if (y===5 && ( (x===previousX-1) || (x===previousX+1) )  ){
             return getBoardValue( previousX, 6 )
             
         }
     } else if (!game.isWhiteTurn && /P\w2\w4/.test(previousMove)){
         //check if selected pawn is in position to capture it
-        if (y===4 && (x===previousX-1) || (x===previousX+1)){
+        if ( y===4 && ( (x===previousX-1) || (x===previousX+1) )  ){
             return getBoardValue( previousX, 5 )
             
         }
@@ -496,7 +496,7 @@ game = null
 
 
 
-/*
+
 // example of en passant moves:     //
 let game = new ChessGame
 game.tryMove("Pd2d4")
@@ -512,4 +512,3 @@ game.tryMove("Pd5e6")      //turn should capture en passant
 game.terminalBoard()
 console.log(game.moveHistory)
 game = null
-*/

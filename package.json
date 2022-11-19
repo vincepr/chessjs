@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/vincepr/chessjs.git"
   },
-  "author": "",
+  "author": "vincepr",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/vincepr/chessjs/issues"
