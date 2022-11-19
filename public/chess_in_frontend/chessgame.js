@@ -7,7 +7,6 @@ draw_board()
 redraw_figures(game.getBoard())
 
 
-
 function draw_board() {
     for (let number=0; number<8; number++){                      //set up chess board grid
         for (let letter=0; letter<8; letter++){
@@ -105,3 +104,7 @@ function drawMoveHistory(arrObj){
         list.appendChild(li);
     })
 }
+
+// :todo pawn promotion
+// :todo after game is won/drawn ->message!
+// :todo css formating + restart button
