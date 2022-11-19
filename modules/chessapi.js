@@ -87,7 +87,8 @@ export default class ChessGame {
     tryMove(move){
         let moveFrom = move.substring(1,3)
         let moveTo = move.substring(3,5)
-        if (this.moveHistory.slice(-1)[0].includes("gameover")){        // game has already ended
+        if (this.moveHistory.slice(-1)[0].includes("gameover")){        
+            // game has already ended
             return false
         }
         else if(this.getMoves(moveFrom).includes(moveTo)){              // move is legal move
@@ -147,7 +148,7 @@ export default class ChessGame {
             // console.log(":dev log  ||: can't move enemys figure: "+position)
             return []                                                   //can not move enemy's figure on other's turn
         }
-        return getLegalMoves(position, this)                            //else: return the legal moves the figure could make
+        return getLegalMoves(this,position)                            //else: return the legal moves the figure could make
     }
 }
 
@@ -172,6 +173,7 @@ function makeMove(game, move) {
         game.board["d"+String(row)] = {type : "R", isWhite: game.isWhiteTurn}
         delete game.board["e"+String(row)]
     } else {
+        //case "normal" movement with choordinates
         // innput like: "Pe7f8x=N+"  Pawn (P) moves from (e7) to (e8) while capturing (x) and promotes to a Knight (=N) setting enemy king in check (x)
         let moveFrom = move.slice(1,3)
         let moveType = game.board[moveFrom].type
@@ -191,9 +193,13 @@ function makeMove(game, move) {
             game.board[moveTo] = {type : newFigureType, isWhite: game.isWhiteTurn}
         }
 
-        //check if en passant move was made -> remove enemy pawn if yes
-
-        // :todo en passant. figure can move there. BUT CAPTURE OF "skipped" figure needs to happen aswell
+        //check if en-passant move was made -> remove enemy pawn if yes
+        let enpassMoveTo =isEnPassantPossible(game, moveFrom)
+        if(enpassMoveTo && moveTo===enpassMoveTo){
+            let previousMove = game.moveHistory[game.moveHistory.length - 1]
+            previousMove = previousMove.slice(3,5)      // only get moveTo position Pa7a5->a5
+            delete game.board[previousMove]
+        }
     }
 }
 
@@ -241,7 +247,7 @@ function isKingInCheck(game){
     // check if king could be captured 
     for (let [x,y] in game.board){
         let figure = game.board[x+y]
-        if (figure.isWhite===game.isWhiteTurn && getLegalMoves(x+y,game).includes(kingToCheck)){
+        if (figure.isWhite===game.isWhiteTurn && getLegalMoves(game, x+y).includes(kingToCheck)){
             return true                                                 // king is of enemy color to figure && king could be attacked
         }
     }
@@ -251,7 +257,7 @@ function isKingInCheck(game){
 
 
 /** return:["g7", "h6"] gets all legal moves for figure on position pos:"f7". does not check for King beeing in "Check" */
-function getLegalMoves(pos, game){
+function getLegalMoves(game, pos){
     let x = Number( pos.substring(0, 1).charCodeAt(0)-96 )
     let y = Number( pos.substring(1, 2) )
     let possibleMoves = []                                              // moves the chess figure could theoretically make
@@ -360,30 +366,21 @@ function getPawnMoves(game, x, y){
         }
     }
 
-    //check for en passant move
-    let previousMove = game.moveHistory[game.moveHistory.length - 1]
-    let previousX = previousMove.substring(1,2).charCodeAt(0)-96        //substring that stores a-h position then string->number
-    //check if last move went from x7->x5
-    if(game.isWhiteTurn && /P\w7\w5/.test(previousMove)){    
-        //check if selected pawn is in position to capture it
-        if (y===5 && (x===previousX-1) ||y===5 && (x===previousX+1)){
-            pos = getBoardValue( previousX, 6 )
-            legalMoves.push(pos)
-            // console.log("en passant posible"+pos) // :todo en passant might be bugged and be possible to often check at some later point
-        }
-    } else if (!game.isWhiteTurn && /P\w2\w4/.test(previousMove)){
-        //check if selected pawn is in position to capture it
-        if (y===4 && (x===previousX-1) ||y===4 &&  (x===previousX+1)){
-            pos = getBoardValue( previousX, 5 )
-            legalMoves.push(pos)
-        }
+    //check for en passant move possible, return false if not, returns move otherwise
+    pos = isEnPassantPossible(game,getBoardValue(x,y))                     
+    if(pos){
+        legalMoves.push(pos)
     }
+
+    
     //:todo pawn promotes "Pa7a8=X" to R,Q,B,N special case not shown as "different" moves. Has to be handled in client so far.
     return legalMoves
 }
 
-//:todo rework this function so it works for both getPawnMoves() and makeMove()
-function isEnPassantPossible(game, x, y){
+/**check for en passant move possible, return false if not, returns move otherwise */
+function isEnPassantPossible(game, pos){
+    let x = Number( pos.substring(0, 1).charCodeAt(0)-96 )
+    let y = Number( pos.substring(1, 2) )
 
     //check for en passant move
     let previousMove = game.moveHistory[game.moveHistory.length - 1]
