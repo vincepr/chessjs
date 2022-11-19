@@ -13,7 +13,7 @@
  *  .tryMove("Ra1a4") -> bool     
  *  .getBoard() -> {"a1":{type: "R", isWhite:false}}  
  *  .getMoveHistory() -> ["start", "Pb2b3", "gameover:draw"] */
-class ChessGame {
+export default class ChessGame {
     constructor(isWhiteTurn=true, startingBoard){
         let  defaultNewgameBoard = {
             "a8" : {type : "R", isWhite : false},
@@ -152,6 +152,7 @@ class ChessGame {
 }
 
 
+
 /** make Move on chessboard. does not check if possible/right/king-checked */
 function makeMove(game, move) {
     if (move === "O-O" || move === "0-0"){
@@ -191,10 +192,12 @@ function makeMove(game, move) {
         }
 
         //check if en passant move was made -> remove enemy pawn if yes
-        
+
         // :todo en passant. figure can move there. BUT CAPTURE OF "skipped" figure needs to happen aswell
     }
 }
+
+
 
 /**return:bool if the next player to make a turn is in checkmate because he has no moves left.*/
 function isNoPossibleMovesLeft(game){
@@ -208,7 +211,7 @@ function isNoPossibleMovesLeft(game){
         if (clone.board[x+y].isWhite === clone.isWhiteTurn){
             let possibleMoves= clone.getMoves(x+y)
             if (possibleMoves.length > 0){
-                for (xy of possibleMoves){
+                for (let xy of possibleMoves){
                     // contruct move to try:
                     let move = String(clone.board[x+y].type)+String(x+y)+String(xy)
                     if (clone.tryMove(move)){
@@ -272,22 +275,22 @@ function getLegalMoves(pos, game){
     }
     else if (straightLineMove){
         // handle straight movement if there is any
-        for (direction of straightLineMove) {
+        for (let direction of straightLineMove) {
             possibleMoves=getNextLinearMoves(game, x, y, direction)
             if (!(possibleMoves === null)){
-                for (move of possibleMoves){
+                for (let move of possibleMoves){
                     legalMoves.push(move)}                              // append all moves for each movement path/direction
                 }
         }
     } else if(relativeToPositionMove) {
         // handle relative movement if there is any
-        for (move of relativeToPositionMove){
+        for (let move of relativeToPositionMove){
             let xx = x + move[0]
             let yy = y + move[1]
             if((xx > 0 && xx < 9) && (yy > 0 && yy < 9) ){              // board edges
                 possibleMoves.push(getBoardValue(xx, yy))}
         }
-        for (move of possibleMoves){
+        for (let move of possibleMoves){
             if(!game.board[move]){                                                                     
                 legalMoves.push(move)                                   //space is free->possible movement
             } else if(game.board[move].isWhite===!game.isWhiteTurn) {     
@@ -336,7 +339,7 @@ function getPawnMoves(game, x, y){
     let ydirection = -1
     if (game.isWhiteTurn) {ydirection=1}
     // check if there is a figure to capture on diagonals in movement direction
-    for (xoffset of [1,-1]){
+    for (let xoffset of [1,-1]){
         let pos = getBoardValue(x+xoffset, y+ydirection)
         let figureToCapture = game.board[pos]
         if(figureToCapture && figureToCapture.isWhite===!game.isWhiteTurn){
@@ -356,6 +359,7 @@ function getPawnMoves(game, x, y){
             }
         }
     }
+    
     //check for en passant move
     let previousMove = game.moveHistory[game.moveHistory.length - 1]
     let previousX = previousMove.substring(1,2).charCodeAt(0)-96        //substring that stores a-h position then string->number
@@ -365,6 +369,7 @@ function getPawnMoves(game, x, y){
         if (y===5 && (x===previousX-1) || (x===previousX+1)){
             pos = getBoardValue( previousX, 6 )
             legalMoves.push(pos)
+            // console.log("en passant posible"+pos) // :todo en passant might be bugged and be possible to often check at some later point
         }
     } else if (!game.isWhiteTurn && /P\w2\w4/.test(previousMove)){
         //check if selected pawn is in position to capture it
@@ -376,6 +381,30 @@ function getPawnMoves(game, x, y){
     //:todo pawn promotes "Pa7a8=X" to R,Q,B,N special case not shown as "different" moves. Has to be handled in client so far.
     return legalMoves
 }
+
+//:todo rework this function so it works for both getPawnMoves() and makeMove()
+function isEnPassantPossible(game, x, y){
+
+    //check for en passant move
+    let previousMove = game.moveHistory[game.moveHistory.length - 1]
+    let previousX = previousMove.substring(1,2).charCodeAt(0)-96        //substring that stores a-h position then string->number
+    //check if last move went from x7->x5
+    if(game.isWhiteTurn && /P\w7\w5/.test(previousMove)){    
+        //check if selected pawn is in position to capture it
+        if (y===5 && (x===previousX-1) || (x===previousX+1)){
+            return getBoardValue( previousX, 6 )
+            
+        }
+    } else if (!game.isWhiteTurn && /P\w2\w4/.test(previousMove)){
+        //check if selected pawn is in position to capture it
+        if (y===4 && (x===previousX-1) || (x===previousX+1)){
+            return getBoardValue( previousX, 5 )
+            
+        }
+    }
+    return false
+}
+
 
 
 /** checks if last positions repeated 3 times returns:bool */
@@ -399,8 +428,6 @@ function getBoardValue(x, y){
 }
 
 
-module.exports = ChessGame
-
 
 
 
@@ -410,7 +437,7 @@ module.exports = ChessGame
 
 /*
 // example moves for 3 fold repetition      //
-game = new ChessGame
+let game = new ChessGame
 game.tryMove("Pe2e4")
 game.tryMove("Pf7f6")
 game.tryMove("Qd1h5")
@@ -429,14 +456,14 @@ game.tryMove("Qh5h4")
 game.tryMove("Ke8f7")       // draw by repetiton -> game is over cant make this move
 game.terminalBoard()
 console.log(game.moveHistory)
-delete game
+game = null
 */
 
 
 
 /*
 //example moves for checkmate in 4 turns    //
-game = new ChessGame
+let game = new ChessGame
 game.tryMove("Pf2f3")
 game.tryMove("Pe7e5")
 game.tryMove("Pg2g4")
@@ -445,14 +472,14 @@ game.tryMove("Pg4g5")      // cant move should be in checkmate
 game.tryMove("Pg4g5")
 game.terminalBoard()
 console.log(game.moveHistory)
-delete game
+game= null
 
 */
 
 
 /*
 // example of getting checked a few times but no mate!      //
-game = new ChessGame
+let game = new ChessGame
 game.tryMove("Pe2e4")
 game.tryMove("Pf7f5")
 game.tryMove("Qd1h5")       //in Check
@@ -461,7 +488,7 @@ game.tryMove("Pg7g6")       //forced 1 move left
 game.tryMove("Qh5g6")       //in Check
 game.terminalBoard()
 console.log(game.moveHistory)
-delete game
+game = null
 
 */
 
@@ -469,9 +496,9 @@ delete game
 
 
 
-
+/*
 // example of en passant moves:     //
-game = new ChessGame
+let game = new ChessGame
 game.tryMove("Pd2d4")
 game.tryMove("Pa7a6")
 game.tryMove("Pd4d5")       //in position to capture using en passant
@@ -484,5 +511,5 @@ game.tryMove("Pd5c6")      //turn to late so cant en passant left ->move fails
 game.tryMove("Pd5e6")      //turn should capture en passant
 game.terminalBoard()
 console.log(game.moveHistory)
-delete game
-
+game = null
+*/
