@@ -272,8 +272,6 @@ function getLegalMoves(game, pos){
     else if (game.board[pos].type==="N") { relativeToPositionMove = [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]]}
     else if (game.board[pos].type==="K") { relativeToPositionMove = [[1,0],[1,1],[0,1],[-1,0],[-1,1],[1,-1],[0,-1],[-1,-1]]}
 
-    //todo: king moves castling
-
    //calculate valid movement options into legalMoves=[]
     if (game.board[pos].type==="P") {
         // pawn movement got special treatment
@@ -302,6 +300,14 @@ function getLegalMoves(game, pos){
             } else if(game.board[move].isWhite===!game.isWhiteTurn) {     
                 legalMoves.push(move)                                   //enemy figure on space -> capture possible
             }
+        }
+    }
+
+    // special case king might castle / rochade
+    if(game.board[pos].type==="K" && (pos==="e1" || pos==="e8")){
+        let castleMoves = getCastleMoves(game)
+        for (let move of castleMoves){
+            legalMoves.push(move)
         }
     }
     // :todo add castling special movements here if king selected + conditions met
@@ -403,6 +409,33 @@ function isEnPassantPossible(game, pos){
 }
 
 
+function getCastleMoves(game){
+        // 1. der könig darf noch nicht gezogen haben!  ->for loop
+    // 5. involved rook must not have moved before  ->for loop like above
+        // 2. der könig darf nicht im schach stehen
+    // 3. der könig darf durch kein Schach ziehen   ->for loop all figures ->seperates left/right
+    // 4. zwischen dem König un dem Turm dürfen keine Figuren stehen -> check 5 fields -> seperates left/right
+    
+    let mh = game.moveHistory
+    let lastMove = mh[mh.length-1]
+    let y = 8 
+    if (game.isWhiteTurn){y = 1}
+    // 1. king cant not be in check:
+    if( !(lastMove.includes("+")) ){
+        for (let move of mh){
+            // 2. king can not have moved:
+            if(move.includes(`Ke${y}`)){return []}
+
+            // 3. rook can not have moved
+            //:todo cant work like this we cant remove here since 1 side castle! do after good night of sleep!
+            if(move.includes(`Ra${y}`)){return []}
+            if(move.includes(`Rh${y}`)){return []}
+        }
+    }
+   
+    return []
+}
+
 
 /** checks if last positions repeated 3 times returns:bool */
 function checkDrawByRepetiton(moveHistory){
@@ -415,8 +448,9 @@ function checkDrawByRepetiton(moveHistory){
         return true
     }
     return false
-
+    //:todo rewrite this with hashing the full board instead to make it proper. to capture 3 repetition with moves inbetween
 }
+
 
 
 /** turn x:int y:int choordiantes into chess noation 1,2 -> a2 : string */
