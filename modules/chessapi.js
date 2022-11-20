@@ -305,7 +305,7 @@ function getLegalMoves(game, pos){
 
     // special case king might castle / rochade
     if(game.board[pos].type==="K" && (pos==="e1" || pos==="e8")){
-        let castleMoves = getCastleMoves(game)
+        let castleMoves = getCastleMoves(game, pos)
         for (let move of castleMoves){
             legalMoves.push(move)
         }
@@ -409,31 +409,64 @@ function isEnPassantPossible(game, pos){
 }
 
 
-function getCastleMoves(game){
-        // 1. der könig darf noch nicht gezogen haben!  ->for loop
-    // 5. involved rook must not have moved before  ->for loop like above
-        // 2. der könig darf nicht im schach stehen
-    // 3. der könig darf durch kein Schach ziehen   ->for loop all figures ->seperates left/right
-    // 4. zwischen dem König un dem Turm dürfen keine Figuren stehen -> check 5 fields -> seperates left/right
+function getCastleMoves(game,pos){
+        // 1. der könig darf nicht im schach stehen
+        // 2. der könig darf noch nicht gezogen haben!  ->for loop
+        // a-c different for queens side/kings side castle
+        // a. involved rook must not have moved before  ->for loop
+        // b. zwischen dem König un dem Turm dürfen keine Figuren stehen -> check 5 fields -> seperates left/right
+    // c. der könig darf durch kein Schach ziehen   ->genau die 2 felder rechts und links von ihm testen if enemy could capture
     
+    
+    //only king figure on basic position could make move (avoid uneccesary for loops by returning early)
+    if(  (!(pos==="e1" || pos ==="e8"))  &&  game.board[pos].type==="K"){
+        return[]
+    }
     let mh = game.moveHistory
     let lastMove = mh[mh.length-1]
     let y = 8 
+    let castleMovesKingCanMake = []
     if (game.isWhiteTurn){y = 1}
     // 1. king cant not be in check:
-    if( !(lastMove.includes("+")) ){
-        for (let move of mh){
-            // 2. king can not have moved:
-            if(move.includes(`Ke${y}`)){return []}
-
-            // 3. rook can not have moved
-            //:todo cant work like this we cant remove here since 1 side castle! do after good night of sleep!
-            if(move.includes(`Ra${y}`)){return []}
-            if(move.includes(`Rh${y}`)){return []}
-        }
+    if( (lastMove.includes("+")) ){return []}
+    // 2. king can not have moved:
+    for (let move of mh){
+        if(move.includes(`Ke${y}`)){return []}
     }
-   
-    return []
+    // case castle kings-side:
+        // b. free fields between rook and king:
+        if (!(game.board["f"+y] || game.board["g"+y])) {
+            // a. involved rook must not have moved before:
+            let isRookNotMoved = true
+            for (let move of mh){
+                if(move.includes(`Rh${y}`)){isRookNotMoved=false}
+            }
+            if (isRookNotMoved){
+                console.log(":todo | king can castle kings-side")
+                castleMovesKingCanMake.push(`g${y}`)
+                // c. king can not move trough a check / attacked field:
+                for (let [x,y] in game.board){
+                    //: todo use isKingInCheck() to make this properly, also for queens-side
+                } 
+            }
+        }
+    // case castle queens-side:
+        // b. free fields between rook and king:
+        if (!(game.board["b"+y] || game.board["c"+y] || game.board["d"+y])) {
+            // a. involved rook must not have moved before:
+            let isRookNotMoved = false
+            for (let move of mh){
+                if(move.includes(`Ra${y}`)){isRookNotMoved=true}
+            }
+            if (isRookNotMoved){
+                // c. king can not move trough a check / attacked field:
+                console.log(":todo | king can castle queens-side")
+                castleMovesKingCanMake.push(`c${y}`)
+                for (let [x,y] in game.board){
+                } 
+            }
+        }
+    return castleMovesKingCanMake
 }
 
 
@@ -468,7 +501,7 @@ function getBoardValue(x, y){
 
 /*
 // example moves for 3 fold repetition      //
-let game = new ChessGame
+var game = new ChessGame
 game.tryMove("Pe2e4")
 game.tryMove("Pf7f6")
 game.tryMove("Qd1h5")
@@ -494,7 +527,7 @@ game = null
 
 /*
 //example moves for checkmate in 4 turns    //
-let game = new ChessGame
+var game = new ChessGame
 game.tryMove("Pf2f3")
 game.tryMove("Pe7e5")
 game.tryMove("Pg2g4")
@@ -510,7 +543,7 @@ game= null
 
 /*
 // example of getting checked a few times but no mate!      //
-let game = new ChessGame
+var game = new ChessGame
 game.tryMove("Pe2e4")
 game.tryMove("Pf7f5")
 game.tryMove("Qd1h5")       //in Check
@@ -527,9 +560,9 @@ game = null
 
 
 
-
+/*
 // example of en passant moves:     //
-let game = new ChessGame
+var game = new ChessGame
 game.tryMove("Pd2d4")
 game.tryMove("Pa7a6")
 game.tryMove("Pd4d5")       //in position to capture using en passant
@@ -540,6 +573,34 @@ game.tryMove("Pe7e5")       // could be captured this turn but other one should 
 console.log(game.getMoves("d5"))
 game.tryMove("Pd5c6")      //turn to late so cant en passant left ->move fails
 game.tryMove("Pd5e6")      //turn should capture en passant
+game.terminalBoard()
+console.log(game.moveHistory)
+game = null
+*/
+
+
+
+// example of castling moves:
+var game = new ChessGame
+
+game.tryMove("Pd2d4")
+game.tryMove("Nb8a6")
+game.tryMove("Ng1h3")
+game.tryMove("Pb7b5")
+game.tryMove("Qd1d2")
+game.tryMove("Pc7c5")
+game.tryMove("Qd2g5")
+game.tryMove("Pe7e5")
+game.tryMove("Pg2g3")
+game.tryMove("Qd8c7")
+game.tryMove("Bf1g2")
+game.tryMove("Bc8b7")
+game.terminalBoard()
+game.tryMove("Ke1g1")   //successful castle of white
+game.tryMove("Ke8c8")   // black cant castle because it would move trough white queen ->fails
+game.tryMove("Bf8e7")
+game.tryMove("Pa2a3")
+game.tryMove("Ke8c8")   // black successful castle
 game.terminalBoard()
 console.log(game.moveHistory)
 game = null
