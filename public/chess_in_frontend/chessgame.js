@@ -2,9 +2,18 @@ import ChessGame from "../../modules/chessapi.js"
 
 var game = new ChessGame
 var selectedMoves
-
 draw_board()
 redraw_figures(game.getBoard())
+
+
+document.getElementById("gameOverButton").onclick = () => { startNewGame()}
+
+
+function startNewGame(){
+    document.getElementById("gameoverMessage").innerHTML=""
+    game = new ChessGame   
+    redraw_figures(game.getBoard())
+}
 
 
 function draw_board() {
@@ -60,9 +69,14 @@ function handleClick(clickedElement){
     if (game.isWhiteTurn) {[playercolor, enemycolor] = [enemycolor, playercolor]}
 
     if (clickedElement.className==="move_marker"){
+        // make try move
         let moveTo = String(clickedElement.parentElement.id)
         let move = selectedMoves["figureType"] + selectedMoves["moveFrom"] +  moveTo
-        if (game.tryMove(move)){
+        let answer
+        if (answer = game.tryMove(move)){
+            if (answer.includes("gameover")){
+                document.getElementById("gameoverMessage").innerHTML=String(answer)
+            }
             redraw_figures(game.getBoard())
         }
     } else{

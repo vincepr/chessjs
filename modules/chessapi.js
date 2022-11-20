@@ -194,11 +194,13 @@ function makeMove(game, move) {
         //fill new position
         game.board[moveTo] = {type : moveType, isWhite: game.isWhiteTurn}
         //special case Pawn Promotion to new Figure:
-        if(moveExtras.includes("=")){
-            //:todo extra checks here to see if figure is pawn and on right side of the border to avoid inputing wrong promotions/ cheats -> implement return false and breaking out of parent with false aswell
-            let newFigureType = moveExtras.split('=')[1]
-            newFigureType= newFigureType.slice(0,1)
-            game.board[moveTo] = {type : newFigureType, isWhite: game.isWhiteTurn}
+        if(moveType==="P" && moveExtras.includes("=")){
+            // to avoid false/cheated inputs only be valid if on edge:
+            if (moveTo.includes("1")|| moveTo.includes("8")){
+                let newFigureType = moveExtras.split('=')[1]
+                newFigureType= newFigureType.slice(0,1)
+                game.board[moveTo] = {type : newFigureType, isWhite: game.isWhiteTurn}
+            }
         }
         //check if en-passant move was made -> remove enemy pawn if yes
         let enpassMoveTo =isEnPassantPossible(game, moveFrom)
@@ -317,8 +319,6 @@ function getLegalMoves(game, pos){
             legalMoves.push(move)
         }
     }
-    // :todo add castling special movements here if king selected + conditions met
-    // :todo indicate if Pawn can promote to queen, rook, knight, bishop
     return legalMoves
 }
 
@@ -485,7 +485,7 @@ function checkDrawByRepetiton(moveHistory){
         return true
     }
     return false
-    //:todo rewrite this with hashing the full board instead to make it proper. to capture 3 repetition with moves inbetween
+    //:todo rewrite this with hashing the full board instead to make it proper. to capture 3 repetition with mixed moves inbetween
 }
 
 
@@ -599,13 +599,13 @@ game.tryMove("Pg2g3")
 game.tryMove("Qd8c7")
 game.tryMove("Bf1g2")
 game.tryMove("Bc8b7")
-game.terminalBoard()
 game.tryMove("Ke1g1")   //successful castle of white
 game.tryMove("Ke8c8")   // black cant castle because it would move trough white queen ->fails
-game.tryMove("Bf8e7")
-game.tryMove("Pa2a3")
-console.log(game.getMoves("Ke8c8"))
-game.tryMove("Ke8c8")   // black successful castle
+game.terminalBoard()
+// game.tryMove("Bf8e7")
+// game.tryMove("Pa2a3")
+// console.log(game.getMoves("Ke8c8"))
+// game.tryMove("Ke8c8")   // black successful castle
 game.terminalBoard()
 console.log(game.moveHistory)
 game = null
