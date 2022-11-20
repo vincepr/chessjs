@@ -87,8 +87,8 @@ export default class ChessGame {
     tryMove(move){
         let moveFrom = move.substring(1,3)
         let moveTo = move.substring(3,5)
+        // game has already ended:
         if (this.moveHistory.slice(-1)[0].includes("gameover")){        
-            // game has already ended
             return false
         }
         else if(this.getMoves(moveFrom).includes(moveTo)){              // move is legal move
@@ -156,35 +156,43 @@ export default class ChessGame {
 
 /** make Move on chessboard. does not check if possible/right/king-checked */
 function makeMove(game, move) {
-    if (move === "O-O" || move === "0-0"){
-        //castle with h-side rook. black is row 8 white is 1
-        let row = 8                         
-        if (game.isWhiteTurn) { row=1 }
-        delete game.board["e"+String(row)]
-        game.board["f"+String(row)] = {type : "R", isWhite: game.isWhiteTurn}
-        game.board["g"+String(row)] = {type : "K", isWhite: game.isWhiteTurn}
-        delete game.board["h"+String(row)]
-    } else if (move ==="O-O-O" || move === "0-0-0") {
-        //castle with a-side rook. black is row 8 white is 1
-        let row = 8                         
-        if (game.isWhiteTurn) { row=1 }
-        delete game.board["a"+String(row)]
-        game.board["c"+String(row)] = {type : "K", isWhite: game.isWhiteTurn}
-        game.board["d"+String(row)] = {type : "R", isWhite: game.isWhiteTurn}
-        delete game.board["e"+String(row)]
+    // innput like: "Pe7f8x=N+"  Pawn (P) moves from (e7) to (e8) while capturing (x) and promotes to a Knight (=N) setting enemy king in check (x)
+    let moveFrom = move.slice(1,3)
+    let moveType = game.board[moveFrom].type
+    let moveTo = move.slice(3,5)
+    let moveExtras = move.slice(5)
+    
+    //king special case, can move 2 pices while performing castle:
+    if(moveType==="K"){
+        // check if move made was castle-movement:
+        let castleMoves = getCastleMoves(game, move)
+        if (castleMoves.includes(moveTo)){
+            //castle with h-side rook. black is row 8 white is 1:
+            if("g"===moveTo.slice(0,1)){
+                let row = 8                         
+                if (game.isWhiteTurn) { row=1 }
+                delete game.board["e"+String(row)]
+                game.board["f"+String(row)] = {type : "R", isWhite: game.isWhiteTurn}
+                game.board["g"+String(row)] = {type : "K", isWhite: game.isWhiteTurn}
+                delete game.board["h"+String(row)]
+            }
+            //castle with a-side rook.
+            else if ("c"===moveTo.slice(0,1)){
+                let row = 8                         
+                if (game.isWhiteTurn) { row=1 }
+                delete game.board["a"+String(row)]
+                game.board["c"+String(row)] = {type : "K", isWhite: game.isWhiteTurn}
+                game.board["d"+String(row)] = {type : "R", isWhite: game.isWhiteTurn}
+                delete game.board["e"+String(row)]
+            }
+        }
     } else {
         //case "normal" movement with choordinates
-        // innput like: "Pe7f8x=N+"  Pawn (P) moves from (e7) to (e8) while capturing (x) and promotes to a Knight (=N) setting enemy king in check (x)
-        let moveFrom = move.slice(1,3)
-        let moveType = game.board[moveFrom].type
-        let moveTo = move.slice(3,5)
-        let moveExtras = move.slice(5)
-    
+
         //delete entry from where we moved from
         delete game.board[moveFrom]
         //fill new position
         game.board[moveTo] = {type : moveType, isWhite: game.isWhiteTurn}
-
         //special case Pawn Promotion to new Figure:
         if(moveExtras.includes("=")){
             //:todo extra checks here to see if figure is pawn and on right side of the border to avoid inputing wrong promotions/ cheats -> implement return false and breaking out of parent with false aswell
@@ -192,7 +200,6 @@ function makeMove(game, move) {
             newFigureType= newFigureType.slice(0,1)
             game.board[moveTo] = {type : newFigureType, isWhite: game.isWhiteTurn}
         }
-
         //check if en-passant move was made -> remove enemy pawn if yes
         let enpassMoveTo =isEnPassantPossible(game, moveFrom)
         if(enpassMoveTo && moveTo===enpassMoveTo){
@@ -401,7 +408,7 @@ function isEnPassantPossible(game, pos){
     } else if (!game.isWhiteTurn && /P\w2\w4/.test(previousMove)){
         //check if selected pawn is in position to capture it
         if ( y===4 && ( (x===previousX-1) || (x===previousX+1) )  ){
-            return getBoardValue( previousX, 5 )
+            return getBoardValue( previousX, 3 )
             
         }
     }
@@ -417,9 +424,8 @@ function getCastleMoves(game,pos){
         // b. zwischen dem König un dem Turm dürfen keine Figuren stehen -> check 5 fields -> seperates left/right
     // c. der könig darf durch kein Schach ziehen   ->genau die 2 felder rechts und links von ihm testen if enemy could capture
     
-    
     //only king figure on basic position could make move (avoid uneccesary for loops by returning early)
-    if(  (!(pos==="e1" || pos ==="e8"))  &&  game.board[pos].type==="K"){
+    if(  (!(pos==="e1" || pos ==="e8"))  && game.board[pos] && game.board[pos].type ==="K"){
         return[]
     }
     let mh = game.moveHistory
@@ -442,7 +448,6 @@ function getCastleMoves(game,pos){
                 if(move.includes(`Rh${y}`)){isRookNotMoved=false}
             }
             if (isRookNotMoved){
-                console.log(":todo | king can castle kings-side")
                 castleMovesKingCanMake.push(`g${y}`)
                 // c. king can not move trough a check / attacked field:
                 for (let [x,y] in game.board){
@@ -454,13 +459,12 @@ function getCastleMoves(game,pos){
         // b. free fields between rook and king:
         if (!(game.board["b"+y] || game.board["c"+y] || game.board["d"+y])) {
             // a. involved rook must not have moved before:
-            let isRookNotMoved = false
+            let isRookNotMoved = true
             for (let move of mh){
-                if(move.includes(`Ra${y}`)){isRookNotMoved=true}
+                if(move.includes(`Ra${y}`)){isRookNotMoved=false}
             }
             if (isRookNotMoved){
                 // c. king can not move trough a check / attacked field:
-                console.log(":todo | king can castle queens-side")
                 castleMovesKingCanMake.push(`c${y}`)
                 for (let [x,y] in game.board){
                 } 
@@ -600,6 +604,7 @@ game.tryMove("Ke1g1")   //successful castle of white
 game.tryMove("Ke8c8")   // black cant castle because it would move trough white queen ->fails
 game.tryMove("Bf8e7")
 game.tryMove("Pa2a3")
+console.log(game.getMoves("Ke8c8"))
 game.tryMove("Ke8c8")   // black successful castle
 game.terminalBoard()
 console.log(game.moveHistory)
