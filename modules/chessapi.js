@@ -163,9 +163,9 @@ function makeMove(game, move) {
     let moveExtras = move.slice(5)
     
     //king special case, can move 2 pices while performing castle:
-    if(moveType==="K"){
+    if(moveType==="K" && (moveTo.includes("c")||moveTo.includes("g")) ){
         // check if move made was castle-movement:
-        let castleMoves = getCastleMoves(game, move)
+        let castleMoves = getCastleMoves(game, moveFrom)
         if (castleMoves.includes(moveTo)){
             //castle with h-side rook. black is row 8 white is 1:
             if("g"===moveTo.slice(0,1)){
@@ -416,14 +416,13 @@ function isEnPassantPossible(game, pos){
 }
 
 
-function getCastleMoves(game,pos){
-        // 1. der könig darf nicht im schach stehen
-        // 2. der könig darf noch nicht gezogen haben!  ->for loop
-        // a-c different for queens side/kings side castle
-        // a. involved rook must not have moved before  ->for loop
-        // b. zwischen dem König un dem Turm dürfen keine Figuren stehen -> check 5 fields -> seperates left/right
+    // 1. der könig darf nicht im schach stehen
+    // 2. der könig darf noch nicht gezogen haben!  ->for loop
+    // a-c different for queens side/kings side castle
+    // a. involved rook must not have moved before  ->for loop
+    // b. zwischen dem König un dem Turm dürfen keine Figuren stehen -> check 5 fields -> seperates left/right
     // c. der könig darf durch kein Schach ziehen   ->genau die 2 felder rechts und links von ihm testen if enemy could capture
-    
+function getCastleMoves(game,pos){
     //only king figure on basic position could make move (avoid uneccesary for loops by returning early)
     if(  (!(pos==="e1" || pos ==="e8"))  && game.board[pos] && game.board[pos].type ==="K"){
         return[]
@@ -448,11 +447,16 @@ function getCastleMoves(game,pos){
                 if(move.includes(`Rh${y}`)){isRookNotMoved=false}
             }
             if (isRookNotMoved){
-                castleMovesKingCanMake.push(`g${y}`)
-                // c. king can not move trough a check / attacked field:
-                for (let [x,y] in game.board){
-                    //: todo use isKingInCheck() to make this properly, also for queens-side
-                } 
+                // //c. king can not move trough a check / attacked. So on field f8 or f1:
+                let clone = structuredClone(game)                          
+                let move = "K"+pos+`f${y}`
+                makeMove(clone, move)
+                clone.moveHistory.push(move)                               
+                clone.isWhiteTurn=!clone.isWhiteTurn
+                if (!isKingInCheck(clone)) {
+                    castleMovesKingCanMake.push(`g${y}`)
+                }
+                // :todo this part (above block) gets called 3x roughly check if you can push most of it into isKingInCheck()
             }
         }
     // case castle queens-side:
@@ -464,10 +468,15 @@ function getCastleMoves(game,pos){
                 if(move.includes(`Ra${y}`)){isRookNotMoved=false}
             }
             if (isRookNotMoved){
-                // c. king can not move trough a check / attacked field:
-                castleMovesKingCanMake.push(`c${y}`)
-                for (let [x,y] in game.board){
-                } 
+                // c. king can not move trough a check / attacked field. So on field d8 or d1:
+                let clone = structuredClone(game)                          
+                let move = "K"+pos+`d${y}`
+                makeMove(clone, move)
+                clone.moveHistory.push(move)                               
+                clone.isWhiteTurn=!clone.isWhiteTurn
+                if (!isKingInCheck(clone)) {
+                    castleMovesKingCanMake.push(`c${y}`)
+                }   
             }
         }
     return castleMovesKingCanMake
@@ -583,7 +592,7 @@ game = null
 */
 
 
-
+/*
 // example of castling moves:
 var game = new ChessGame
 
@@ -599,13 +608,13 @@ game.tryMove("Pg2g3")
 game.tryMove("Qd8c7")
 game.tryMove("Bf1g2")
 game.tryMove("Bc8b7")
-game.tryMove("Ke1g1")   //successful castle of white
+console.log(game.tryMove("Ke1g1"))   //successful castle of white
 game.tryMove("Ke8c8")   // black cant castle because it would move trough white queen ->fails
-game.terminalBoard()
-// game.tryMove("Bf8e7")
-// game.tryMove("Pa2a3")
-// console.log(game.getMoves("Ke8c8"))
-// game.tryMove("Ke8c8")   // black successful castle
+game.tryMove("Bf8e7")
+game.tryMove("Pa2a3")
+console.log(game.getMoves("Ke8c8"))
+game.tryMove("Ke8c8")   // black successful castle
 game.terminalBoard()
 console.log(game.moveHistory)
 game = null
+*/
