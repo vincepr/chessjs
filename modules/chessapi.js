@@ -618,3 +618,26 @@ game.terminalBoard()
 console.log(game.moveHistory)
 game = null
 */
+
+/*
+// example of pawn promotion:
+var game = new ChessGame
+game.tryMove("Pg2g4")
+game.tryMove("Pb7b5")
+game.tryMove("Pg4g5")
+game.tryMove("Pb5b4")
+game.tryMove("Pg5g6")
+game.tryMove("Pb4b3")
+game.tryMove("Pg6h7")
+game.tryMove("Pb3c2")
+game.tryMove("Ph7g8=Q")
+game.tryMove("Pc2d1=B")
+game.terminalBoard()
+game=null
+*/
+
+
+
+
+
+

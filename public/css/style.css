@@ -1,17 +1,20 @@
 :root{
-    --cell-size: 100px;
+    --cell-size: 6vw;
 }
 body{
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: small;
     margin:0;
     background-color: rgb(196, 178, 178);
 }
 .board{
-    width: 100vw;
-    height: 100vh;
-    display: grid;
+    display: inline-grid;
     justify-content:center;
     align-content:center;
     grid-template-columns: repeat(8, auto);
+}
+.list{
+    display: inline-grid;
 }
 div.cell{
     position:relative;
@@ -20,6 +23,7 @@ div.cell{
     height: var(--cell-size);
     background-color: rgb(250, 245, 239);
     border:1px solid grey;
+    user-select:none;
 }
 div.cellalt{
     background-color:rgb(233, 198, 170);
@@ -31,6 +35,16 @@ div.cellalt{
     align-self: center;
     width: var(--cell-size);
     height: var(--cell-size);
+}
+.pawn_promote_marker{
+    position:relative;
+    justify-self: center;
+    align-self: center;
+    width: calc(0.7*var(--cell-size));
+    height: calc(0.7*var(--cell-size));
+    z-index: 2;
+    background-color: rgb(233, 198, 170);
+    border: solid black 1px;
 }
 .move_marker{
     position:absolute;
