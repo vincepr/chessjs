@@ -179,7 +179,3 @@ function drawMoveHistory(arrObj){
         list.appendChild(li);
     })
 }
-
-// :todo pawn promotion
-// :todo after game is won/drawn ->message!
-// :todo css formating + restart button
