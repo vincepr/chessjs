@@ -129,6 +129,7 @@ function clickedMovement(clickedElement){
 
 }
 
+
 /** create selectors to choose what figure to promote the pawn to */
 function clickedPawnPromote(clickedElement){
     console.log("clicked pawnpromote")
@@ -156,9 +157,6 @@ function clickedPawnPromote(clickedElement){
         img.onclick = () => { clickedMovement(img) }
         document.getElementById(moveTo).appendChild(img)
     }
-    
-    
-
 }
 
 
@@ -179,3 +177,5 @@ function drawMoveHistory(arrObj){
         list.appendChild(li);
     })
 }
+
+
