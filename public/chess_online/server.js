@@ -40,7 +40,7 @@ io.on("connection", (socket) => {
     // create own Room/Session and "host" a game (white player):
     socket.on("createRoom", (data) => {
         socket.join("room-" + ++roomNr)
-        socket.emit("newGame", {name: data.name, room: "room-"+roomNr})
+        socket.emit("createdRoom", {name: data.name, room: "room-"+roomNr})
     })
 
     // join as player 2 (black) into a room:
@@ -49,7 +49,7 @@ io.on("connection", (socket) => {
         if(room && room.length===1){
             socket.join(data.room)
             socket.broadcast.to(data.room).emit("player1", {})
-            socket.emit("player2", {name: data.name, room: data.room})
+            socket.emit("joinedRoom", {name: data.name, room: data.room})
         } else {
             socket.emit("err", {message: "Error, Room is full"})
         }

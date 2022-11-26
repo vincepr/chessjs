@@ -1,23 +1,52 @@
-draw_board()
-
-// load on /socket.io/socket.io.js exposed socket.io clientside:
-const socket = io();
-// connect EventListeners:
-document.getElementById("buttonNewGame").addEventListener("click", createGameRoom)
-
-for (  let btn of document.getElementsByClassName("buttonJoinGame")  ){
-    btn.addEventListener("click", () => {
-        joinGameRoom(btn)
-    })
+class App{
+    constructor(){
+        this.state = {
+            username: false,
+            game: false,         // false | "waiting" | "playing" | "gameover"
+            isMyTurn: false,
+        }
+        this.$menu=document.getElementById("menu")
+        this.$waiting=document.getElementById("waitingRoom")
+        this.$game=document.getElementById("game")
+        document.getElementById("buttonNewGame").addEventListener("click", createGameRoom)
+    }
+    changeState(newState) {
+        this.$menu.style.display="none"
+        this.$waiting.style.display="none"
+        this.$game.style.display="none"
+        if (newState === false){
+            this.$menu.style.display="initial"
+        }else if (newState === "waiting"){
+            this.$waiting.style.display="initial"
+        }else if (newState === "playing"){
+            this.$game.style.display="initial"
+        }else if (newState === "gameover"){
+            this.$game.style.display="initial"
+            // :todo add win popup or remove this state if not needed
+        }else {
+            console.error("error app-State does not exist: "+newState)
+            return false
+        }
+        this.state=newState
+        return true
+    }  
 }
 
+
+const socket = io();
+const APP = new App
+
 // get active rooms Signal:
-socket.emit('getRooms')
-// answer of getRooms Signal:
-socket.on('sendRooms', function(data){
-    console.log(data.length)
-    if (data.length===0){document.getElementById("roomsList").innerHTML="No Player currently in queue, press F5 to refresh or que yourself."}
-    else {drawRoomList(data)} 
+socket.emit("getRooms")
+
+draw_board()
+
+
+// requests all rooms with 1 player -> possible to join in
+socket.on("sendRooms", (data) =>{
+    if (data.length===0){
+        document.getElementById("roomsList").innerHTML="No Player currently in queue, press F5 to refresh or que yourself."
+    } else {drawRoomList(data)} 
 })
 // draw List of games to join
 function drawRoomList(arrObj){
@@ -30,19 +59,39 @@ function drawRoomList(arrObj){
         btn.innerText="Join"
         btn.id=item.roomName
         $list.appendChild(li).appendChild(btn)
+        btn.addEventListener("click", () => {
+            joinGameRoom(btn)
+        })
     })
 }
 
 
+/*      socket-signarls incoming from server  */ 
 
-// functions to communicate with server using socket.io-signals:
-function createGameRoom(clickedElement){
+socket.on("createdRoom", (data) =>{
+    //data = {name: data.name, room: "room-"+roomNr}
+    APP.changeState("waiting")
+})
+
+socket.on("sendRooms", (data) =>{
+    if (data.length===0){
+        document.getElementById("roomsList").innerHTML="No Player currently in queue, press F5 to refresh or que yourself."
+    } else {drawRoomList(data)} 
+})
+
+socket.on("joinedRoom", (data)=>{
+    // data = {name: data.name, room: data.room}
+})
+
+
+/*      onClick functions  */                   
+
+function createGameRoom(){
     let name = document.getElementById("inputName").value
     if(!name){
         alert("Please enter your name.")
         return
     }
-    console.log("Create a new Game Room with name: "+name)
     socket.emit("createRoom", {name: name})
 }
 
@@ -53,38 +102,11 @@ function joinGameRoom(clickedElement){
         alert("Please enter your name. (or room does not exist) ")
         return
     }
-    console.log("Join Game with name: "+name+" on room: "+room)
-    socket.emit('joinRoom', {name: name, room: room})
+    socket.emit("joinRoom", {name: name, room: room})
 }
 
 
     
-class App{
-    constructor(){
-        this.state = {
-            username: false,
-            game: false,         // false | "waiting" | "playing" | "gameover"
-            isMyTurn: false,
-        }
-        $menu=document.getElementById("menu")
-        $game=document.getElementById("game")
-    }
-    changeState(newState){
-        if (newState === false){
-
-        }else if (newState === "waiting"){
-            $menu.visible=false;
-        }else if (newState === "playing"){
-
-        }else if (newState === "gameover"){
-
-        }else {
-            console.error("error app-State does not exist: "+newState)
-            return
-        }
-        this.state=newState
-    }
-}
 
 
 
