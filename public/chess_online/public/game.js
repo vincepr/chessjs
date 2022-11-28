@@ -9,7 +9,7 @@ export default class Session {
         this.game
         this.selectedMoves
 
-        draw_board()
+        this.draw_board()
         document.getElementById("gameOverButton").onclick = () => { this.startNewgame()}     //:todo remove this after multiplayer is set
         this.startNewgame()
     }
@@ -165,28 +165,42 @@ export default class Session {
             this.redraw_figures()
         } else { console.log("error: illegal/wrong move tried")}
     }
+
+    draw_board() {
+        if (this.isTurn){
+            //player is white
+            for (let number=0; number<8; number++){                      
+                for (let letter=0; letter<8; letter++){
+                    let div = createCell(number, letter)
+                    // color board:
+                    if(number%2){
+                        if(!(letter%2)){div.className="cell cellalt"}
+                    }else{
+                        if( (letter%2)){div.className="cell cellalt"}
+                    }
+                }
+            }
+        }else {
+            //player is black
+            for (let number=7; number>=0; number--){                      
+                for (let letter=7; letter>=0; letter--){
+                    let div = createCell(number, letter)
+                    // color board
+                    if(number%2){
+                        if(!(letter%2)){div.className="cell cellalt"}
+                    }else{
+                        if( (letter%2)){div.className="cell cellalt"}
+                    }
+                }
+            }
+        }
+    }
 }
 
 
 // Helper functions:
 /**set up the grid */
-function draw_board() {
-    for (let number=0; number<8; number++){                      
-        for (let letter=0; letter<8; letter++){
-            let letter_value=""
-            let div = document.createElement("div")
-            div.className="cell"
-            let boardElement = document.getElementById("board")
-            boardElement.appendChild(div)
-            letter_value=String.fromCharCode(65+letter)         //0=A, 1=B, 2=C...
-            div.innerHTML=letter_value+(8-number)
-            div.id=String(letter_value.toLowerCase())+String(8-number)
-            if (letter % 2){                                    
-                boardElement.children[letter+(number*8)-number%2].className="cell cellalt"
-            }
-        }
-    }
-}
+
 
 
 function removeElementsByClassName(className){
@@ -208,3 +222,14 @@ function drawMoveHistory(arrObj){
 }
 
 
+function createCell(number, letter){
+    let letter_value=""
+    let div = document.createElement("div")
+    div.className="cell"
+    let boardElement = document.getElementById("board")
+    boardElement.appendChild(div)
+    letter_value=String.fromCharCode(65+letter)         //0=A, 1=B, 2=C...
+    div.innerHTML=letter_value+(8-number)
+    div.id=String(letter_value.toLowerCase())+String(8-number)
+    return div
+}

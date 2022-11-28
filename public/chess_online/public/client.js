@@ -101,7 +101,6 @@ socket.on("gamestart:player2", (data)=>{        // data = {name: data.name, room
 
 socket.on("enemyMovePlayed", (data)=>{
     APP.session.otherMultiPlayerMadeMove(data.move)
-    console.log("enemyMove made triggered")
 })
 
 
