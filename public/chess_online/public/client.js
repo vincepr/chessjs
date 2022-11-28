@@ -1,27 +1,37 @@
+import Session from "./game.js"
+
+
+
 class App{
-    constructor(){
-        this.state = {
-            username: false,
-            game: false,         // false | "waiting" | "playing" | "gameover"
-            isMyTurn: false,
-        }
+    constructor(socket){
+        let session             // placeholder for the game-session once 2 players are found
+        this.socket = socket
+        this.state = false      // false | "waiting" | "playing" | "gameover"
+        this.isTurn
+        this.joinedRoom
+        // dom-elements:
         this.$menu=document.getElementById("menu")
         this.$waiting=document.getElementById("waitingRoom")
         this.$game=document.getElementById("game")
         document.getElementById("buttonNewGame").addEventListener("click", createGameRoom)
+        //request room-list from server:
+        this.socket.emit("getRooms")
     }
     changeState(newState) {
         this.$menu.style.display="none"
         this.$waiting.style.display="none"
         this.$game.style.display="none"
+
         if (newState === false){
             this.$menu.style.display="initial"
         }else if (newState === "waiting"){
             this.$waiting.style.display="initial"
-        }else if (newState === "playing"){
+        }else if (newState === "game"){
+            this.session = new Session({socket:this.socket, isTurn: this.isTurn, room:this.joinedRoom})                      // creates the actual "chess-game"
             this.$game.style.display="initial"
         }else if (newState === "gameover"){
             this.$game.style.display="initial"
+            this.session= null
             // :todo add win popup or remove this state if not needed
         }else {
             console.error("error app-State does not exist: "+newState)
@@ -29,18 +39,16 @@ class App{
         }
         this.state=newState
         return true
-    }  
+    }
 }
 
 
 const socket = io();
-const APP = new App
+const APP = new App(socket)
 
-// get active rooms Signal:
-socket.emit("getRooms")
 
-draw_board()
 
+/*      socket-signals incoming from server  */ 
 
 // requests all rooms with 1 player -> possible to join in
 socket.on("sendRooms", (data) =>{
@@ -48,6 +56,7 @@ socket.on("sendRooms", (data) =>{
         document.getElementById("roomsList").innerHTML="No Player currently in queue, press F5 to refresh or que yourself."
     } else {drawRoomList(data)} 
 })
+
 // draw List of games to join
 function drawRoomList(arrObj){
     let $list = document.getElementById("roomsList")
@@ -65,9 +74,6 @@ function drawRoomList(arrObj){
     })
 }
 
-
-/*      socket-signarls incoming from server  */ 
-
 socket.on("createdRoom", (data) =>{
     //data = {name: data.name, room: "room-"+roomNr}
     APP.changeState("waiting")
@@ -79,12 +85,27 @@ socket.on("sendRooms", (data) =>{
     } else {drawRoomList(data)} 
 })
 
-socket.on("joinedRoom", (data)=>{
-    // data = {name: data.name, room: data.room}
+socket.on("gamestart:player1", (data)=>{        // data = {name: data.name, room: data.room}
+    APP.isTurn=data.isTurn
+    APP.joinedRoom=data.room
+    APP.changeState("game")
+    
+})
+
+socket.on("gamestart:player2", (data)=>{        // data = {name: data.name, room: data.room}
+    APP.isTurn=data.isTurn
+    APP.joinedRoom=data.room
+    APP.changeState("game")   
+    
+})
+
+socket.on("enemyMovePlayed", (data)=>{
+    APP.session.otherMultiPlayerMadeMove(data.move)
+    console.log("enemyMove made triggered")
 })
 
 
-/*      onClick functions  */                   
+/*      onClick functions -> emit socket.io-signals to server  */                   
 
 function createGameRoom(){
     let name = document.getElementById("inputName").value
@@ -103,40 +124,4 @@ function joinGameRoom(clickedElement){
         return
     }
     socket.emit("joinRoom", {name: name, room: room})
-}
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//chess logic:
-/**set up the grid */
-function draw_board() {
-    for (let number=0; number<8; number++){                      
-        for (let letter=0; letter<8; letter++){
-            let letter_value=""
-            let div = document.createElement("div")
-            div.className="cell"
-            let boardElement = document.getElementById("board")
-            boardElement.appendChild(div)
-            letter_value=String.fromCharCode(65+letter)         //0=A, 1=B, 2=C...
-            div.innerHTML=letter_value+(8-number)
-            div.id=String(letter_value.toLowerCase())+String(8-number)
-            if (letter % 2){                                    
-                boardElement.children[letter+(number*8)-number%2].className="cell cellalt"
-            }
-        }
-    }
 }

@@ -2,9 +2,9 @@
 import express from 'express'
 import { createServer } from "http"
 import { Server } from "socket.io"
-// hacky way to get __dirname: //:todo check if able to remove this latler when serverin static-page.
-import path from "path"
-const __dirname = path.resolve()
+
+import path from "path"                 // hacky way to get __dirname: //:todo check if able to remove this latler when serverin static-page.
+const __dirname = path.resolve()        // hacky way to get __dirname: //:todo check if able to remove this latler when serverin static-page.
 
 //setup:
 const app = express()
@@ -15,7 +15,7 @@ var roomNr = 0
 
 
 // load static page
-app.use(express.static(__dirname + '/public/chess_online/public'))
+app.use(express.static(__dirname + '/public'))
 
 
 // socket-connection with client
@@ -28,9 +28,9 @@ io.on("connection", (socket) => {
         var availableRooms = []
         var rooms = io.sockets.adapter.rooms
         if (rooms) {
-            for (let [key,value] of rooms) {
-                if (key.includes("room")){
-                    availableRooms.push({roomName: key, players: value})
+            for (let [key,players] of rooms) {
+                if (key.includes("room") && players.size<2){                // socket.io creates a default room for every Connection -> use "room" to filter those out.
+                    availableRooms.push({roomName: key, players: players})
                 }
             }
         }
@@ -45,11 +45,12 @@ io.on("connection", (socket) => {
 
     // join as player 2 (black) into a room:
     socket.on("joinRoom", (data)=>{
-        let room = io.of("/").adapter.rooms[data.room]      // or io.sockets.adapter.rooms with socket.io v 1.0 and forward
-        if(room && room.length===1){
+        let room = io.of("/").adapter.rooms.get(data.room)      // same as =io.sockets.adapter.rooms.get(data.room) with socket.io v 1.0 and forward. returns -> >map->set => use .size not .length on it 
+        if(room && room.size===1){
             socket.join(data.room)
-            socket.broadcast.to(data.room).emit("player1", {})
-            socket.emit("joinedRoom", {name: data.name, room: data.room})
+            let randomBool = Math.random() >= 0.5
+            socket.broadcast.to(data.room).emit( "gamestart:player1", {isTurn:  randomBool, room: data.room})      //player waiting in the room
+            socket.emit                        ( "gamestart:player2", {isTurn: !randomBool, room: data.room})      //player joining in
         } else {
             socket.emit("err", {message: "Error, Room is full"})
         }
@@ -57,16 +58,13 @@ io.on("connection", (socket) => {
 
     // broadcast successfull move to other player:
     socket.on("moveMade", (data)=>{
-        socket.broadcast.to(data.room).emit("turnPlayed", {
-            tile: data.tile,
-            room: data.room
-        })
+        socket.broadcast.to(data.room).emit("enemyMovePlayed", data)
     })
 
-    // game has ended:
-    socket.on("gameOver", function(data){
-        socket.broadcast.to(data.room).emit("gameEnd", data)
-    })
+    // // game has ended:
+    // socket.on("gameOver", function(data){
+    //     socket.broadcast.to(data.room).emit("gameEnd", data)
+    // })
 })
 
 

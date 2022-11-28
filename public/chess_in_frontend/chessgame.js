@@ -1,4 +1,4 @@
-import ChessGame from "../../modules/chessapi.js"
+import ChessGame from "../modules/chessapi.js"
 
 var game
 var selectedMoves
