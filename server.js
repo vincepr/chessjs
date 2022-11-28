@@ -13,7 +13,7 @@ const io = new Server(httpServer, {})
 const PORT = process.env.PORT || 8080
 var roomNr = 0
 
-
+console.log(__dirname)
 // load static page
 app.use(express.static(__dirname + '/public'))
 
