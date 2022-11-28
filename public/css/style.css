@@ -64,7 +64,7 @@ div.cellalt{
     width: calc(0.7*var(--cell-size));
     height: calc(0.7*var(--cell-size));
     z-index: 2;
-    background-color: rgb(233, 198, 170);
+    background-color: rgb(118, 150, 86);
     border: solid black 1px;
 }
 .move_marker{

@@ -55,6 +55,7 @@ export default class Session {
 
 
     clickedFigure(clickedElement){
+        let board = this.game.getBoard()
         let moveFrom = String(clickedElement.parentElement.id)
         let moveTo = this.game.getMoves(moveFrom)
         let playercolor = "black_figure"
@@ -74,7 +75,7 @@ export default class Session {
             if(this.isPawnPromotionIsSelected(moveTo) ){
                 // movement where pawn promotes
                 let img = document.createElement("img")
-                img.src = `../img/marker.png`
+                img.src = `../img/marker_special.png`
                 img.className="move_marker"
                 img.onclick = () => { this.clickedPawnPromote(img) }
                 document.getElementById(moveTo).appendChild(img)  
@@ -83,6 +84,7 @@ export default class Session {
             else{
                 let img = document.createElement("img")
                 img.src = `../img/marker.png`
+                if(board[moveTo]){img.src=`../img/marker_special.png`}      //can capture->special circle-marker
                 img.className="move_marker"
                 img.onclick = () => { this.clickedMovement(img) }
                 document.getElementById(moveTo).appendChild(img)

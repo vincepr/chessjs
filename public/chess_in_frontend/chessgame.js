@@ -69,6 +69,7 @@ function isPawnPromotionIsSelected(moveTo){
 
 
 function clickedFigure(clickedElement){
+    let board = game.getBoard()
     let moveFrom = String(clickedElement.parentElement.id)
     let moveTo = game.getMoves(moveFrom)
     let playercolor = "black_figure"
@@ -88,7 +89,7 @@ function clickedFigure(clickedElement){
         if(isPawnPromotionIsSelected(moveTo) ){
             // movement where pawn promotes
             let img = document.createElement("img")
-            img.src = `../img/marker.png`
+            img.src = `../img/marker_special.png`
             img.className="move_marker"
             img.onclick = () => { clickedPawnPromote(img) }
             document.getElementById(moveTo).appendChild(img)  
@@ -97,6 +98,7 @@ function clickedFigure(clickedElement){
         else{
             let img = document.createElement("img")
             img.src = `../img/marker.png`
+            if(board[moveTo]){img.src=`../img/marker_special.png`}      //can capture->special circle-marker
             img.className="move_marker"
             img.onclick = () => { clickedMovement(img) }
             document.getElementById(moveTo).appendChild(img)
