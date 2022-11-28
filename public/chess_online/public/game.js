@@ -1,5 +1,9 @@
 import Chessgame from "../../modules/chessapi.js"
 
+/**
+ * loads a instance of the Chessgame module and handles drawing the board, figures and onClick Events concerning the chess-board.
+ * 
+ */
 
 export default class Session {
     constructor(data){              //{socket:this.socket, isTurn: this.isTurn}

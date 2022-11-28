@@ -1,8 +1,10 @@
 /**
- * load class ChessGame and interact only with it by using:
- * .getMoves("a1")->["a2","a3","a4"]   
- * .tryMove("Ra1a4")->returns move if made or false if not possible. returns "... gameover:draw"   "... gameover:winnerIsWhite:true"  
- * .getBoard()->{"a1":{type: "R", isWhite:false}} 
+ * load class ChessGame and interact only with it by using the following class-functions to keep the game in a chess-valid state.
+ * 
+ * .getMoveHistory()
+ * .getBoard()
+ * .getMoves("a1")->["a2","a3","a4"]            returns legal moves the figure on "a1" could make
+ * .tryMove("Ra1a4")                           returns move or false if move would put king in check etc.    returns false | move | "... gameover:draw"  | "... gameover:winnerIsWhite:true"   
  * 
  * using chess-notation like R: Rook, N: Knight, B: Bishop, Q:Queen, K:King, P:Pawn (pawn added) 
  * 

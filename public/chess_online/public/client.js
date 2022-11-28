@@ -1,6 +1,9 @@
 import Session from "./game.js"
 
-
+/**
+ * Handles most of the Websocket connections to server, and the States of the Website: | before choosing  | waitingRoom for 2nd player | playing a game |
+ * 
+ */
 
 class App{
     constructor(socket){
