@@ -10,13 +10,11 @@ export default class Session {
         this.selectedMoves
 
         this.draw_board()
-        document.getElementById("gameOverButton").onclick = () => { this.startNewgame()}     //:todo remove this after multiplayer is set
         this.startNewgame()
     }
 
 
     startNewgame(){
-        document.getElementById("gameoverMessage").innerHTML=""
         this.game = new Chessgame
         this. redraw_figures()
     }
@@ -106,7 +104,7 @@ export default class Session {
         if (answer){
             // special case this.game is over(after move):
             if (answer.includes("gameover")){
-                document.getElementById("gameoverMessage").innerHTML=String(answer)
+                this.gameisOver(answer)
             }
             // move was successful redraw board:
             this.socket.emit("moveMade",{move:move, room:this.room})
@@ -119,7 +117,6 @@ export default class Session {
     
     /** create selectors to choose what figure to promote the pawn to */
     clickedPawnPromote(clickedElement){
-        console.log("clicked pawnpromote")
         let moveTo = String(clickedElement.parentElement.id)
         let moveFrom = this.selectedMoves["moveFrom"]
         removeElementsByClassName("move_marker")
@@ -158,7 +155,7 @@ export default class Session {
         if (answer){
             // special case this.game is over(after move):
             if (answer.includes("gameover")){
-                document.getElementById("gameoverMessage").innerHTML=String(answer)
+                this.gameisOver(answer)
             }
             // move was successful redraw board:
             this.isTurn=!this.isTurn
@@ -194,6 +191,9 @@ export default class Session {
                 }
             }
         }
+    }
+    gameisOver(answer){
+        this.socket.emit("gameOver",{room: this.room, winner: answer})
     }
 }
 

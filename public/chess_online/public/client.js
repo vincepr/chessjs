@@ -6,7 +6,7 @@ class App{
     constructor(socket){
         let session             // placeholder for the game-session once 2 players are found
         this.socket = socket
-        this.state = false      // false | "waiting" | "playing" | "gameover"
+        this.state = "main"      // "main" | "waiting" | "playing"
         this.isTurn
         this.joinedRoom
         // dom-elements:
@@ -22,23 +22,28 @@ class App{
         this.$waiting.style.display="none"
         this.$game.style.display="none"
 
-        if (newState === false){
+        if (newState === "lobby"){
+            this.socket.emit("getRooms")
             this.$menu.style.display="initial"
         }else if (newState === "waiting"){
             this.$waiting.style.display="initial"
         }else if (newState === "game"){
             this.session = new Session({socket:this.socket, isTurn: this.isTurn, room:this.joinedRoom})                      // creates the actual "chess-game"
             this.$game.style.display="initial"
-        }else if (newState === "gameover"){
-            this.$game.style.display="initial"
-            this.session= null
-            // :todo add win popup or remove this state if not needed
         }else {
             console.error("error app-State does not exist: "+newState)
             return false
         }
         this.state=newState
         return true
+    }
+
+    backToLobby(){
+        //clear game-board and session
+        document.getElementById("board").innerHTML=""
+        document.getElementById("moveHistoryList").innerHTML=""
+        this.session= null
+        APP.changeState("lobby")
     }
 }
 
@@ -102,6 +107,45 @@ socket.on("gamestart:player2", (data)=>{        // data = {name: data.name, room
 socket.on("enemyMovePlayed", (data)=>{
     APP.session.otherMultiPlayerMadeMove(data.move)
 })
+
+socket.on("gameOverAPP", (data)=>{
+    let msgBig = "Game ended in a draw!"
+    let msgSmall = "by repetition"
+    let msgScore = " 1 - 1 "
+    let msgMyPicture = `../../img/b_king.png`
+    let msgOpPicture = `../../img/w_pawn.png`
+    if(APP.isTurn){
+        msgMyPicture = `../../img/w_king.png`
+        msgOpPicture = `../../img/b_pawn.png`
+    }
+    if(data.winner.includes("true")===APP.isTurn){
+        // this player has Won
+        msgBig = "You Won!"
+        msgSmall = "by checkmate"
+        msgScore = "1 - 0"
+    }
+    else{
+        msgBig = "You Lost!"
+        msgSmall = "by checkmate"
+        msgScore = "0 - 1"
+    }
+
+    let winningMessage = `
+        <div class="popup" id="popup">
+            <h2>${msgBig}</h2>
+            <p>${msgSmall}</p>
+            <div >
+                <img src="${msgMyPicture}">
+                <p>${msgScore}</p>
+                <img src="${msgOpPicture}">
+            </div>
+            <p>Back to the Lobby to play another game.</p>
+            <button id="gameOverButton">Go to Lobby</button>
+        </div>`
+    document.getElementById("board").innerHTML = document.getElementById("board").innerHTML+winningMessage
+    document.getElementById("gameOverButton").addEventListener("click", APP.backToLobby)
+})
+
 
 
 /*      onClick functions -> emit socket.io-signals to server  */                   

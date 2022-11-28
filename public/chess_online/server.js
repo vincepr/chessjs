@@ -61,10 +61,11 @@ io.on("connection", (socket) => {
         socket.broadcast.to(data.room).emit("enemyMovePlayed", data)
     })
 
-    // // game has ended:
-    // socket.on("gameOver", function(data){
-    //     socket.broadcast.to(data.room).emit("gameEnd", data)
-    // })
+    // game has ended:
+    socket.on("gameOver", function(data){
+        socket.leave(data.room)
+        socket.emit("gameOverAPP", {winner: data.winner})
+    })
 })
 
 

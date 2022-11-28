@@ -11,18 +11,18 @@
 </head>
 <body>
     <h1>Chess Multiplayer</h1>
+    <p>pictures by <a href="https://www.vecteezy.com">Vecteezy.com</a></p>
     <div id="menu">
         <h3>Welcome</h3>
         <ol>
-          <li>Player 1: (white) creates a room.</li>
-          <li>Player 2: (black) enters a existing game-room.</li>
+          <li>Player 1: creates a room.</li>
+          <li>Player 2: enters a existing game-room.</li>
         </ol>
 
         <h4>Choose your player-name</h4>
         <input id="inputName" type="text" placeholder="your name" maxlength="10" required />
-        <h4>Create a new wait for players</h4>
-        <button id="buttonNewGame">Create Room</button>
-        <br>
+        <h4>Create a new wait for players <button id="buttonNewGame">Create Room</button></h4>
+        
         <h4>Join an existing game</h4>
         <ol id="roomsList">No Player currently in queue, press F5 to refresh or que yourself.</ol>
     </div>
@@ -34,8 +34,6 @@
     <div id = "game" style="display:none" >
         <div class="board" id="board"></div>
         <div class="list" id="moveHistoryList"></div>   
-        <button id="gameOverButton">End Game</button>
-        <h1 class="gameoverMessage" id="gameoverMessage"></h1>
     </div>
 </body>
 </html>
