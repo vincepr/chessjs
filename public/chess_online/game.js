@@ -1,4 +1,4 @@
-import Chessgame from "../../modules/chessapi.js"
+import Chessgame from "../modules/chessapi.js"
 
 /**
  * loads a instance of the Chessgame module and handles drawing the board, figures and onClick Events concerning the chess-board.
@@ -41,9 +41,9 @@ export default class Session {
             if (figure_type==="N"){figure_type="knight"}
             if (figure_type==="K"){figure_type="king"}
     
-            img.src=`../../img/b_${figure_type}.png`
+            img.src=`../img/b_${figure_type}.png`
             if (board[pos].isWhite){
-                img.src=`../../img/w_${figure_type}.png`
+                img.src=`../img/w_${figure_type}.png`
                 figure_col="white_figure"
             }
             img.id=figure_type
@@ -74,7 +74,7 @@ export default class Session {
             if(this.isPawnPromotionIsSelected(moveTo) ){
                 // movement where pawn promotes
                 let img = document.createElement("img")
-                img.src = `../../img/marker.png`
+                img.src = `../img/marker.png`
                 img.className="move_marker"
                 img.onclick = () => { this.clickedPawnPromote(img) }
                 document.getElementById(moveTo).appendChild(img)  
@@ -82,7 +82,7 @@ export default class Session {
             // normal movement:
             else{
                 let img = document.createElement("img")
-                img.src = `../../img/marker.png`
+                img.src = `../img/marker.png`
                 img.className="move_marker"
                 img.onclick = () => { this.clickedMovement(img) }
                 document.getElementById(moveTo).appendChild(img)
@@ -133,10 +133,10 @@ export default class Session {
             if (figure_type==="N"){figure_name="knight"}
             // create figure/option to promote to
             let img = document.createElement("img")
-            img.src=`../../img/b_${figure_name}.png`
+            img.src=`../img/b_${figure_name}.png`
             let figure_col= "black_figure"
             if (this.selectedMoves["isWhite"]){
-                img.src=`../../img/w_${figure_name}.png`
+                img.src=`../img/w_${figure_name}.png`
                 figure_col="white_figure"
             }
             img.id=figure_type
@@ -217,11 +217,13 @@ function removeElementsByClassName(className){
 
 function drawMoveHistory(arrObj){
     let list = document.getElementById("moveHistoryList");
-    list.innerHTML=""
+    if(arrObj.length>1){list.innerHTML=""}
     arrObj.forEach((item)=>{
-        let li = document.createElement("li");
-        li.innerText = item;
-        list.appendChild(li);
+        if (!(item==="start")){
+            let li = document.createElement("li");
+            li.innerText = item;
+            list.appendChild(li);
+        }
     })
 }
 

@@ -170,11 +170,13 @@ function removeElementsByClassName(className){
 
 function drawMoveHistory(arrObj){
     let list = document.getElementById("moveHistoryList");
-    list.innerHTML=""
+    if(arrObj.length>1){list.innerHTML=""}
     arrObj.forEach((item)=>{
-        let li = document.createElement("li");
-        li.innerText = item;
-        list.appendChild(li);
+        if (!(item==="start")){
+            let li = document.createElement("li");
+            li.innerText = item;
+            list.appendChild(li);
+        }
     })
 }
 

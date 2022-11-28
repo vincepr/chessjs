@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../css/style.css">
     <script src="/socket.io/socket.io.js"></script>
     <script type="module" defer src="./client.js"></script>
     <title>Online Chess</title>
 </head>
 <body>
-    <h1>Multiplayer Chess  || <a href="../../chess_in_frontend/index.html">Singleplayer Chess</a></h1> 
+    <h1>Multiplayer Chess  || <a href="../chess_in_frontend/index.html">Singleplayer Chess</a></h1> 
     <div id="menu">
         <h3>Welcome</h3>
         <ol>
@@ -28,11 +28,12 @@
 
     <div id="waitingRoom" style="display:none">
         <h3>Waiting for Player to connect</h3>
+        <div id="loadingSpinner"></div><div id="loadingSpinner"></div><div id="loadingSpinner"></div>
     </div>
 
     <div id = "game" style="display:none" >
         <div class="board" id="board"></div>
-        <div class="list" id="moveHistoryList"></div>   
+        <div class="list" id="moveHistoryList"> Move History</div>   
     </div>
 </body>
 </html>

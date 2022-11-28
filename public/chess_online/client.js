@@ -27,9 +27,9 @@ class App{
 
         if (newState === "lobby"){
             this.socket.emit("getRooms")
-            this.$menu.style.display="initial"
+            this.$menu.style.display="block"
         }else if (newState === "waiting"){
-            this.$waiting.style.display="initial"
+            this.$waiting.style.display="block"
         }else if (newState === "game"){
             this.session = new Session({socket:this.socket, isTurn: this.isTurn, room:this.joinedRoom})                      // creates the actual "chess-game"
             this.$game.style.display="initial"
@@ -115,11 +115,11 @@ socket.on("gameOverAPP", (data)=>{
     let msgBig = "Game ended in a draw!"
     let msgSmall = "by repetition"
     let msgScore = " 1 - 1 "
-    let msgMyPicture = `../../img/b_king.png`
-    let msgOpPicture = `../../img/w_pawn.png`
+    let msgMyPicture = `../img/b_king.png`
+    let msgOpPicture = `../img/w_pawn.png`
     if(APP.isTurn){
-        msgMyPicture = `../../img/w_king.png`
-        msgOpPicture = `../../img/b_pawn.png`
+        msgMyPicture = `../img/w_king.png`
+        msgOpPicture = `../img/b_pawn.png`
     }
     if(data.winner.includes("true")===APP.isTurn){
         // this player has Won
