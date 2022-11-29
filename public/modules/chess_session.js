@@ -1,4 +1,4 @@
-import Chessgame from "../modules/chessapi.js"
+import Chessgame from "./chess_logic.js"
 
 /**
  * loads a instance of the Chessgame module and handles drawing the board, figures and onClick Events concerning the chess-board.
@@ -188,7 +188,7 @@ export default class Session {
             for (let number=7; number>=0; number--){                      
                 for (let letter=7; letter>=0; letter--){
                     let div = createCell(number, letter)
-                    // color board
+                    // color boardsocket
                     if(number%2){
                         if(!(letter%2)){div.className="cell cellalt"}
                     }else{

@@ -1,4 +1,4 @@
-import Session from "./game.js"
+import Session from "../modules/chess_session.js"
 
 /**
  * Handles most of the Websocket connections to server, and the States of the Website: | before choosing  | waitingRoom for 2nd player | playing a game |
