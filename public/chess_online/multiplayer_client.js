@@ -7,7 +7,7 @@ import Session from "../modules/chess_session.js"
 
 class App{
     constructor(socket){
-        let session             // placeholder for the game-session once 2 players are found
+        this.session             // placeholder for the game-session once 2 players are found
         this.socket = socket
         this.state = "main"      // "main" | "waiting" | "playing"
         this.isTurn

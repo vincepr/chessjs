@@ -49,6 +49,12 @@ div.cell{
 div.cellalt{
     background-color:rgb(238, 238, 210);
 }
+div.cell.lastmove{
+    background-color: rgb(201, 204, 123);
+}
+div.cell.selectedmove{
+    background-color: rgb(176, 204, 123);
+}
 
 .figure{
     position:absolute;
@@ -65,7 +71,7 @@ div.cellalt{
     height: calc(0.7*var(--cell-size));
     z-index: 2;
     background-color: rgb(118, 150, 86);
-    border: solid black 1px;
+    border: solid black 2px;
 }
 .move_marker{
     position:absolute;

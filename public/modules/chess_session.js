@@ -26,10 +26,13 @@ export default class Session {
 
     redraw_figures(){
         let board = this.game.getBoard()
+        removeHighlightedCells("lastmove")
+        removeHighlightedCells("selectedmove")
         removeElementsByClassName("figure")
         removeElementsByClassName("move_marker")
         removeElementsByClassName("pawn_promote_marker")
         drawMoveHistory(this.game.getMoveHistory())
+        drawPreviousMove(this.game.getMoveHistory())
         for (var pos in board){
             let img = document.createElement("img")
             let figure_type=board[pos].type
@@ -70,6 +73,10 @@ export default class Session {
             "isWhite": this.game.getBoard()[moveFrom].isWhite,
             "figureType": this.game.getBoard()[moveFrom].type,
         }
+        //add move hilights:
+        removeHighlightedCells("selectedmove")
+        document.querySelector(`#${this.selectedMoves.moveFrom}`).className+=" selectedmove"
+
         for (let moveTo of this.selectedMoves["moveTo"]){
             // special case Pawn promotion (is type pawn, is on border-edge and or right color):
             if(this.isPawnPromotionIsSelected(moveTo) ){
@@ -205,8 +212,14 @@ export default class Session {
 
 
 // Helper functions:
-/**set up the grid */
 
+function removeHighlightedCells(cssClass){
+    let cells = document.querySelectorAll(`.${cssClass}`)
+    cells.forEach((cell)=>{
+        let className = cell.className.replace(` ${cssClass}`, "")
+        cell.className =className
+    })
+}
 
 
 function removeElementsByClassName(className){
@@ -240,4 +253,16 @@ function createCell(number, letter){
     div.innerHTML=letter_value+(8-number)
     div.id=String(letter_value.toLowerCase())+String(8-number)
     return div
+}
+
+
+function drawPreviousMove(moveHistory){
+    let pm = moveHistory[moveHistory.length-1]
+    if (!(pm.includes("gameover") || pm.includes("start"))){
+        let moveFrom = pm.slice(1,3)
+        let moveTo = pm.slice(3,5)
+        // add highlightedCells
+        document.querySelector(`#${moveFrom}`).className+=" lastmove"
+        document.querySelector(`#${moveTo}`).className+=" lastmove"    
+    }
 }
