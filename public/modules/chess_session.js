@@ -176,6 +176,7 @@ export default class Session {
         } else { console.log("error: illegal/wrong move tried")}
     }
 
+    
     draw_board() {
         if (this.isTurn){
             //player is white
