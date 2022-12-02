@@ -3,8 +3,8 @@ import express from 'express'
 import { createServer } from "http"
 import { Server } from "socket.io"
 
-import path from "path"                 // hacky way to get __dirname: //:todo check if able to remove this latler when serverin static-page.
-const __dirname = path.resolve()        // hacky way to get __dirname: //:todo check if able to remove this latler when serverin static-page.
+import path from "path"                 // hacky way to get __dirname: //:todo check if able to remove this at the end
+const __dirname = path.resolve()        // hacky way to get __dirname: //:todo check if able to remove this at the end
 
 //setup:
 const app = express()
@@ -21,7 +21,6 @@ app.use(express.static(__dirname + '/public'))
 // socket-connection with client
 io.on("connection", (socket) => {
     //console.log(`new user connected`)
-
 
     // get list of rooms with players waiting to play:
     socket.on("getRooms", () =>{
