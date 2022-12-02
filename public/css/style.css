@@ -57,6 +57,7 @@ div.cell.selectedmove{
 }
 
 .figure{
+    cursor:grab;
     position:absolute;
     justify-self: center;
     align-self: center;
@@ -70,7 +71,7 @@ div.cell.selectedmove{
     width: calc(0.7*var(--cell-size));
     height: calc(0.7*var(--cell-size));
     z-index: 2;
-    background-color: rgb(118, 150, 86);
+    background-color: rgb(118, 150, 86); 
     border: solid black 2px;
 }
 .move_marker{
@@ -80,9 +81,6 @@ div.cell.selectedmove{
     width: calc(1*var(--cell-size));
     height: calc(1*var(--cell-size));
     opacity: 0.7;
-}
-img{
-    -webkit-user-drag: none;
 }
 #menu{
     padding:20px;

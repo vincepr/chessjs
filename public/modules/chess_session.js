@@ -1,5 +1,5 @@
 import Chessgame from "./chess_logic.js"
-
+import DragDrop from "./drag_drop.js"
 /**
  * loads a instance of the Chessgame module and handles drawing the board, figures and onClick Events concerning the chess-board.
  * 
@@ -12,7 +12,7 @@ export default class Session {
         this.room=data.room
         this.game
         this.selectedMoves
-
+        this.dragDrop = new DragDrop(this)        //imports the dragnDrop functionality
         this.draw_board()
         this.startNewgame()
     }
@@ -52,6 +52,7 @@ export default class Session {
             img.id=figure_type
             img.className="figure"
             img.onclick = () => { this.clickedFigure(img) }
+            this.dragDrop.DndDroppers(img)
             document.getElementById(pos).appendChild(img)
         }
     }
@@ -79,22 +80,25 @@ export default class Session {
 
         for (let moveTo of this.selectedMoves["moveTo"]){
             // special case Pawn promotion (is type pawn, is on border-edge and or right color):
+            let img = document.createElement("img")
             if(this.isPawnPromotionIsSelected(moveTo) ){
+
                 // movement where pawn promotes
-                let img = document.createElement("img")
                 img.src = `../img/marker_special.png`
                 img.className="move_marker"
                 img.onclick = () => { this.clickedPawnPromote(img) }
-                document.getElementById(moveTo).appendChild(img)  
+                document.getElementById(moveTo).appendChild(img)
+                this.dragDrop.DndPawnPromote(img) 
             }
-            // normal movement:
             else{
-                let img = document.createElement("img")
+
+                // normal movement:
                 img.src = `../img/marker.png`
                 if(board[moveTo]){img.src=`../img/marker_special.png`}      //can capture->special circle-marker
                 img.className="move_marker"
                 img.onclick = () => { this.clickedMovement(img) }
                 document.getElementById(moveTo).appendChild(img)
+                this.dragDrop.DndMovement(img)  
             }
         }
     }
