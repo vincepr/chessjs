@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" defer src="./multiplayer_client.js"></script>
+    <title>Online Chess</title>
+</head>
+<body>
+    <h1>Multiplayer Chess  || <a href="../chess_in_frontend/index.html">Singleplayer Chess</a></h1> 
+    <div id="menu">
+        <h3>Welcome</h3>
+        <ol>
+          <li>Player 1: creates a room.</li>
+          <li>Player 2: enters a existing game-room.</li>
+          <li>Feel free to check it out by opening this site in 2 Tabs</li>
+          <li>! Multiplayer will only work if hosted with nodejs (so not on github-pages)</li>
+        </ol>
+
+        <h4>Choose your player-name</h4>
+        <input id="inputName" type="text" placeholder="your name" maxlength="10" required />
+        <h4>Create a new wait for players <button id="buttonNewGame">Create Room</button></h4>
+        
+        <h4>Join an existing game</h4>
+        <ol id="roomsList">No Player currently in queue, press F5 to refresh or que yourself.</ol>
+    </div>
+
+    <div id="waitingRoom" style="display:none">
+        <h3>Waiting for Player to connect  <div id="loadingSpinner"></div></h3>
+        
+    </div>
+
+    <div id = "game" style="display:none">
+        <div class="board" id="board"></div>
+        <div class="list" id="moveHistoryList"> Move History</div>   
+    </div>
+</body>
+</html>
