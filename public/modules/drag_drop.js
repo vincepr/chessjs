@@ -42,7 +42,6 @@ function handleDropPromote(e) {
 
 function handleDragStart(e){
     let clickedElement = e.target
-    console.log(clickedElement)
     session.clickedFigure(clickedElement)
 
     // center a Image on the mouse to avoid default drag-behaviour:

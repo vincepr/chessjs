@@ -5,6 +5,9 @@ import DragDrop from "./drag_drop.js"
  * 
  */
 
+
+var soundEffect = new Audio("../sound/sound_plop.wav"); // buffers automatically when created
+
 export default class Session {
     constructor(data){              //{socket:this.socket, isTurn: this.isTurn}
         this.socket=data.socket
@@ -119,6 +122,7 @@ export default class Session {
         if (!this.isTurn){return}
         let answer= this.game.tryMove(move)
         if (answer){
+            soundEffect.play()
             // special case this.game is over(after move):
             if (answer.includes("gameover")){
                 this.gameisOver(answer)
@@ -127,7 +131,9 @@ export default class Session {
             this.socket.emit("moveMade",{move:move, room:this.room})
             this.redraw_figures()
             this.isTurn=!this.isTurn
-        } else { console.log("error: illegal/wrong move tried")}
+        } else { 
+            // king in check or illegal move tried
+        }
     
     }
     
@@ -177,7 +183,7 @@ export default class Session {
             // move was successful redraw board:
             this.isTurn=!this.isTurn
             this.redraw_figures()
-        } else { console.log("error: illegal/wrong move tried")}
+        } else { console.log("error: Player 2 tried illegal/wrong move!")}
     }
 
     
@@ -261,6 +267,7 @@ function createCell(number, letter){
 }
 
 
+// adds highlihted cells to show the previous move more clearly
 function drawPreviousMove(moveHistory){
     let pm = moveHistory[moveHistory.length-1]
     if (!(pm.includes("gameover") || pm.includes("start"))){

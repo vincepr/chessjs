@@ -38,8 +38,9 @@ io.on("connection", (socket) => {
 
     // create own Room/Session and "host" a game (white player):
     socket.on("createRoom", (data) => {
-        socket.join("room-" + ++roomNr)
-        socket.emit("createdRoom", {name: data.name, room: "room-"+roomNr})
+        let roomName = "room-" + ++roomNr + " - " +data.name
+        socket.join(roomName)
+        socket.emit("createdRoom", {name: data.name, room: roomName})
     })
 
     // join as player 2 (black) into a room:

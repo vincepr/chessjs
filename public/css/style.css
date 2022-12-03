@@ -56,7 +56,11 @@ div.cell.selectedmove{
     background-color: rgb(176, 204, 123);
 }
 
+img{
+    -webkit-user-drag: none;
+}
 .figure{
+    -webkit-user-drag:element;
     cursor:grab;
     position:absolute;
     justify-self: center;
