@@ -700,4 +700,3 @@ game=null
 // console.log(game.tryMove("Kd1c1"))
 // game.terminalBoard()
 // game=null
-
