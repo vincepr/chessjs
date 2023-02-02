@@ -511,7 +511,6 @@ function getBoardValue(x, y){
 
 
 
-
 //// test examples 
 
 /*
