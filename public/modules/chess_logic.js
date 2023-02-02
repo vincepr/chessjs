@@ -166,6 +166,7 @@ function makeMove(game, move) {
     
     //king special case, can move 2 pices while performing castle:
     if(moveType==="K" && (moveTo.includes("c")||moveTo.includes("g")) ){
+        console.log("can castle"+moveFrom)
         // check if move made was castle-movement:
         let castleMoves = getCastleMoves(game, moveFrom)
         if (castleMoves.includes(moveTo)){
@@ -177,6 +178,7 @@ function makeMove(game, move) {
                 game.board["f"+String(row)] = {type : "R", isWhite: game.isWhiteTurn}
                 game.board["g"+String(row)] = {type : "K", isWhite: game.isWhiteTurn}
                 delete game.board["h"+String(row)]
+                return
             }
             //castle with a-side rook.
             else if ("c"===moveTo.slice(0,1)){
@@ -186,32 +188,33 @@ function makeMove(game, move) {
                 game.board["c"+String(row)] = {type : "K", isWhite: game.isWhiteTurn}
                 game.board["d"+String(row)] = {type : "R", isWhite: game.isWhiteTurn}
                 delete game.board["e"+String(row)]
+                return
             }
-        }
-    } else {
-        //case "normal" movement with choordinates
-
-        //delete entry from where we moved from
-        delete game.board[moveFrom]
-        //fill new position
-        game.board[moveTo] = {type : moveType, isWhite: game.isWhiteTurn}
-        //special case Pawn Promotion to new Figure:
-        if(moveType==="P" && moveExtras.includes("=")){
-            // to avoid false/cheated inputs only be valid if on edge:
-            if (moveTo.includes("1")|| moveTo.includes("8")){
-                let newFigureType = moveExtras.split('=')[1]
-                newFigureType= newFigureType.slice(0,1)
-                game.board[moveTo] = {type : newFigureType, isWhite: game.isWhiteTurn}
-            }
-        }
-        //check if en-passant move was made -> remove enemy pawn if yes
-        let enpassMoveTo =isEnPassantPossible(game, moveFrom)
-        if(enpassMoveTo && moveTo===enpassMoveTo){
-            let previousMove = game.moveHistory[game.moveHistory.length - 1]
-            previousMove = previousMove.slice(3,5)      // only get moveTo position Pa7a5->a5
-            delete game.board[previousMove]
         }
     }
+    //case "normal" movement with choordinates
+
+    //delete entry from where we moved from
+    delete game.board[moveFrom]
+    //fill new position
+    game.board[moveTo] = {type : moveType, isWhite: game.isWhiteTurn}
+    //special case Pawn Promotion to new Figure:
+    if(moveType==="P" && moveExtras.includes("=")){
+        // to avoid false/cheated inputs only be valid if on edge:
+        if (moveTo.includes("1")|| moveTo.includes("8")){
+            let newFigureType = moveExtras.split('=')[1]
+            newFigureType= newFigureType.slice(0,1)
+            game.board[moveTo] = {type : newFigureType, isWhite: game.isWhiteTurn}
+        }
+    }
+    //check if en-passant move was made -> remove enemy pawn if yes
+    let enpassMoveTo =isEnPassantPossible(game, moveFrom)
+    if(enpassMoveTo && moveTo===enpassMoveTo){
+        let previousMove = game.moveHistory[game.moveHistory.length - 1]
+        previousMove = previousMove.slice(3,5)      // only get moveTo position Pa7a5->a5
+        delete game.board[previousMove]
+    }
+    
 }
 
 
@@ -638,7 +641,63 @@ game=null
 */
 
 
+// used to bugfix, the king did not move-bug
+// var game = new ChessGame
+// game.tryMove("Pf2f4")
+// game.tryMove("Pf7f5")
+// game.tryMove("Pg2g4")
+// game.tryMove("Pg7g5")
+// game.tryMove("Ph2h4")
+// game.tryMove("Ng8f6")
+// game.tryMove("Bf1h3")
+// game.tryMove("Ph7h5")
+// game.tryMove("Pf4g5")
+// game.tryMove("Nf6e4")
+// game.tryMove("Pg4f5")
+// game.tryMove("Rh8g8")
+// game.tryMove("Bh3g2")
+// game.tryMove("Pe7e5")
+// game.tryMove("Bg2e4")
+// game.tryMove("Pc7c6")
+// game.tryMove("Pg5g6")
+// game.tryMove("Pd7d5")
+// game.tryMove("Be4g2")
+// game.tryMove("Bc8f5")
+// game.tryMove("Pd2d3")
+// game.tryMove("Bf5g6")
+// game.tryMove("Bc1g5")
+// game.tryMove("Bf8e7")
+// game.tryMove("Ng1f3")
+// game.tryMove("Pe5e4")
+// game.tryMove("Nf3e5")
+// game.tryMove("Qd8c7")
+// game.tryMove("Bg5f4")
+// game.tryMove("Pe4d3")
+// game.tryMove("Pe2d3")
+// game.tryMove("Nb8d7")
+// game.tryMove("Ne5g6")
+// game.tryMove("Rg8g6")
+// game.tryMove("Bf4c7")
+// game.tryMove("Rg6g2")
+// game.tryMove("Qd1f3")
+// game.tryMove("Rg2c2")
+// game.tryMove("Rh1f1")
+// game.tryMove("Be7h4")
+// game.tryMove("Ke1d1")
+// game.tryMove("Nd7e5")
+// game.tryMove("Bc7e5")
+// game.tryMove("Rc2b2")
+// game.tryMove("Qf3f8")
+// game.tryMove("Ke8d7")
+// game.tryMove("Rf1f7")
+// game.tryMove("Kd7e6")
+// game.tryMove("Pd3d4")
+// game.tryMove("Ra8f8")
+// game.tryMove("Rf7f8")
+// game.tryMove("Pc6c5")
+// game.terminalBoard()
 
-
-
+// console.log(game.tryMove("Kd1c1"))
+// game.terminalBoard()
+// game=null
 
